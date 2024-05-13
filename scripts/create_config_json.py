@@ -1,24 +1,10 @@
 import json
 
-# models = ['inf_svm', 'linear_svc', 'log_reg', 'rf']
-# paranoia_levels = [1, 2, 3, 4]
-# base_path = "/models_newds"
-
-# for model in models:
-#     for level in paranoia_levels:
-#         config = {
-#             "sklearn_clf_path": f"{base_path}/{model}_pl{level}.joblib",
-#             "crs_pl": level
-#         }
-#         with open(f"{model}_pl{level}_config.json", 'w') as file:
-#             json.dump(config, file, indent=4)
-
-
 import json
 import os
 
 # Directory paths
-base_dir = "/home/gfloris/modsec-experiments/"
+base_dir = "/home/usr_name/modsec-learn/"
 config_dir = os.path.join(base_dir,"modsec_config")
 models_dir = os.path.join(base_dir, "data/models_newds")
 rules_dir = os.path.join(base_dir, "coreruleset", "rules")

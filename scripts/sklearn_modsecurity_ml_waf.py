@@ -27,12 +27,7 @@ class SklearnModSecurityMlWaf(SklearnModelWrapper):
         
         type_check(crs_rules_ids_path, str, "crs_rules_ids_path")
         type_check(rules_path, str, "rules_path")
-        # try:
-        #     with open(crs_rules_ids_path, 'r') as fp:
-        #         crs_rules_ids = json.load(fp)['rules_ids']
-        # except (json.JSONDecodeError, OSError) as e:
-        #     raise SystemExit("Error loading the OWASP CRS rules IDs from {}".format(e))
-
+        
         self._feat_builder = ModSecurityFeaturesExtractor(
             crs_rules_ids_path, 
             rules_path,

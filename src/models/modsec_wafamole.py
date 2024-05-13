@@ -1,34 +1,32 @@
 """
-A wrapper for the ModSecurity CRS WAF (without extractor only classifier).
+Wrapper model for (py)ModSecurity
 """
 
 import os
-import numpy as np
+from pathlib import Path
 import re
+from urllib.parse import quote_plus, urlencode
+from enum import Enum
 
-from src.utils import type_check
-from urllib.parse import quote_plus
 from ModSecurity import ModSecurity, RulesSet, Transaction, LogProperty
+from wafamole.models import Model
+from utils import type_check
 
 
-class PyModSecurity():
+class PyModSecurityWafamole(Model):
     """PyModSecurity WAF wrapper"""
 
-    _BAD_STATUS_CODES = [401, 403]
-    _GOOD_STATUS_CODES = list(range(200, 209))
     _SELECTED_RULES_FILES = [
         'REQUEST-901-INITIALIZATION.conf',
         'REQUEST-942-APPLICATION-ATTACK-SQLI.conf'
     ]
 
     def __init__(
-            self,
-            rules_dir,
-            threshold   = 5.0,
-            pl          = 4,
-            output_type = 'score',
-            debug       = False
-        ):
+        self, 
+        rules_dir, 
+        threshold = 5.0, 
+        pl = 4
+    ):
         """
         Constructor of PyModsecurity class
         
@@ -40,13 +38,10 @@ class PyModSecurity():
                 The threshold to use for the ModSecurity CRS.
             pl: int from 1 to 4
                 The paranoia level to use for the ModSecurity CRS.
-            output_type: str
-                The output type of the WAF. Can be 'binary' or 'score'.
         """
         type_check(rules_dir, str, 'rules_dir')
         type_check(threshold, float, 'threshold')
         type_check(pl, int, 'pl'),
-        type_check(output_type, str, 'output_type')
 
         # Check if the paranoia level is valid
         if not 1 <= pl <= 4:
@@ -54,20 +49,12 @@ class PyModSecurity():
                 "Invalid value for pl input param: {}. Valid values are: [1, 2, 3, 4]"
                     .format(pl)
             )
-        
-        # Check if the output type is valid
-        if output_type not in ['binary', 'score']:
-            raise ValueError(
-                "Invalid value for mode input param: {}. Valid values are: ['binary', 'score']"
-                    .format(output_type)
-            )
-        
-        self._output_type           = output_type
+            
         self._modsec                = ModSecurity()
         self._rules                 = RulesSet()
-        self._rules_logger_callback = None
         self._threshold             = threshold
-        self._debug                 = debug
+        self._debug                 = False
+        self._rules_logger_callback = None
 
         # Load the ModSecurity CRS configuration files
         for conf_file in ['modsecurity.conf', f'crs-setup-pl{pl}.conf']:
@@ -85,6 +72,29 @@ class PyModSecurity():
             print("[INFO] Using ModSecurity CRS with PL = {} and INBOUND THRESHOLD = {}"
                     .format(pl, threshold)
             )
+
+    def extract_features(self, value):
+        return value
+
+
+    def classify(self, value: str):
+        """
+        Predict the class of the provided payload using the ModSecurity CRS WAF.
+        
+        Arguments:
+        ----------
+            value: str
+                The payload to classify.
+        
+        Returns:
+        --------
+            score: float
+                The score of the response if the output type is 'score', 0.0 if the
+                output type is 'binary' and the response is good, 1.0 if the response
+                is bad.
+        """
+        self._process_query(value)
+        return self._process_response()
 
 
     def _process_query(self, payload: str):
@@ -115,7 +125,7 @@ class PyModSecurity():
         # Process the payload using the ModSecurity CRS
         transaction = Transaction(self._modsec, self._rules)
         transaction.processURI(
-            "http://127.0.0.1/test?{}".format(payload), 
+            "http://127.0.0.1/test?q={}".format(payload), 
             "GET", 
             "HTTP/1.1"
         )
@@ -135,45 +145,10 @@ class PyModSecurity():
                 is bad.
         """
         if self._rules_logger_cb is not None:
-            if self._output_type == 'binary':
-                if self._rules_logger_cb.get_status() in __class__._BAD_STATUS_CODES:
-                    return 1.0
-                else:
-                    return 0.0
-            elif self._output_type == 'score':
-                return self._rules_logger_cb.get_score()
+            return self._rules_logger_cb.get_score()
         else:
             raise SystemExit("Callback to process rules not initialized")
 
-
-    def predict(self, X):
-        """
-        Predict the class labels for samples in X, if the output type is 'binary', 
-        however if the output type is 'score', it returns the score of samples in X.
-
-        Arguments:
-        ----------
-            X: array-like of shape (n_samples,)
-                The input samples to predict.
-
-        Returns
-        -------
-            y_pred : ndarray of shape (n_samples,)
-                Vector containing the class labels/score for each sample.
-        """
-        def process_and_get_prediction(x):
-            self._process_query(x)
-            return self._process_response()
-
-        if isinstance(X, list) or len(X.shape) == 1:
-            scores = np.array([process_and_get_prediction(x) for x in X])
-        else:
-            raise ValueError(
-            "Invalid input shape. Expected 1D array or list, got {}D array"
-                .format(len(X.shape))
-            )
-        
-        return scores
 
     def _get_triggered_rules(self):
         """

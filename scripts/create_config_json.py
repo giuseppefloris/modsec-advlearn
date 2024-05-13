@@ -4,7 +4,7 @@ import json
 import os
 
 # Directory paths
-base_dir = "/home/usr_name/modsec-learn/"
+base_dir = "/home/gfloris/modsec-learn/"
 config_dir = os.path.join(base_dir,"modsec_config")
 models_dir = os.path.join(base_dir, "data/models_newds")
 rules_dir = os.path.join(base_dir, "coreruleset", "rules")

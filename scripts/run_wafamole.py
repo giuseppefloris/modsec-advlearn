@@ -5,18 +5,16 @@ import random
 import pickle
 import re
 import sqlglot
-from wafamole.evasion import EvasionEngine
-from wafamole.exceptions.models_exceptions import UnknownModelError
+import toml
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-try:
-    from src.models import PyModSecurityWrapper
-except ImportError:
-    # ModSecurity module is not available
-    pass
-from sklearn_modsecurity_ml_waf import SklearnModSecurityMlWaf
+from src.models import PyModSecurityWafamole
+
+from wafamole.evasion import EvasionEngine
+from wafamole.exceptions.models_exceptions import UnknownModelError
+from src.models.sklearn_modsecurity_ml_waf import SklearnModSecurityMlWaf
 
 
 def _load_json_conf(json_conf_path):
@@ -69,16 +67,21 @@ def run_wafamole(
     use_multiproc
 ):
 
+    settings         = toml.load('config.toml')
+    crs_dir          = settings['crs_dir']
+    crs_ids_path     = settings['crs_ids_path']
+    models_path      = settings['models_path']
+    
     np.random.seed(random_seed)
     random.seed(random_seed)
 
     if re.match(r"modsecurity_pl[1-4]", waf_type):
-        pl = int(waf_type[-1])
-        try:
-            waf = PyModSecurityWrapper(pl, rules_path=waf_path)
-        except Exception as error:
-            print("ModSecurity wrapper is not installed, see https://github.com/AvalZ/pymodsecurity to install")
-            
+        pl = int(waf_type[-1]) 
+        waf = PyModSecurityWafamole(
+            rules_dir = crs_dir,
+            threshold = 5.0,
+            pl        = pl
+        )
     elif waf_type == "ml_model_crs":
         waf = SklearnModSecurityMlWaf(**_load_json_conf(waf_path))
     else:
@@ -91,16 +94,11 @@ def run_wafamole(
             dataset = json.load(fp)
     except Exception as error:
         raise SystemExit("Error loading the dataset: {}".format(error))
+    
     print("[INFO] Number of attack payloads: {}".format(len(dataset)))
 
     with open(output_path, 'w') as out_file:
-        for sample in dataset[:3]:
-            # sample_error, adv_sample_error = False, False
-            # try:
-            #     sqlglot.transpile(sample)
-            # except sqlglot.errors.ParseError:
-            #     sample_error = True
-
+        for sample in dataset:
             best_score, adv_sample, scores_trace, _, _, _, _ = opt.evaluate(
                 sample, 
                 max_rounds, 
@@ -108,22 +106,16 @@ def run_wafamole(
                 timeout, 
                 threshold
             )
-
-            # try:
-            #     sqlglot.transpile(adv_sample)
-            # except sqlglot.errors.ParseError:
-            #     adv_sample_error = True
-
-            # if adv_sample_error and sample_error:
-            #     print("[ERROR] Both original payload and adv payload are not valid!\nPayload:{}\nAdv payload:{}\n".format(repr(sample), repr(adv_sample)))
-            # elif adv_sample_error and not sample_error:
-            #     print("[ERROR] Original payload is valid but adv payload is not valid!\nPayload:{}\nAdv payload:{}\n".format(repr(sample), repr(adv_sample)))
-            # else:
-            #     info = {'payload': sample, 'adv_payload': adv_sample, 'best_score': best_score}
-            #     out_file.write(json.dumps(info) + '\n')
-
-            info = {'payload': sample, 'adv_payload': adv_sample, 'best_score': best_score, 'scores_tarce': scores_trace}
             
+            if isinstance(best_score, np.ndarray):
+                best_score = best_score.tolist()[0]
+
+            info = {
+                'payload'     : sample,
+                'adv_payload' : adv_sample,
+                'best_score'  : best_score,
+                'scores_tarce': scores_trace
+            }
             
             out_file.write(json.dumps(info) + '\n')
 

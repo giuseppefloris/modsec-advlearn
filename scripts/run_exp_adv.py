@@ -6,12 +6,12 @@ import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # IMPORTANT: Set the following paths according to your setup !!!
-base_path = '/home/usr_name/modsec-learn'
-config_path = '/home/usr_name/modsec-learn/modsec_config'
-data_base_path = '/home/usr_name/modsec-learn/data/dataset'
+base_path = '/home/gfloris/modsec-learn'
+config_path = '/home/gfloris/modsec-learn/modsec_config'
+data_base_path = '/home/gfloris/modsec-learn/data/dataset'
 # base_path = os.path.abspath(os.getcwd())
-crs_path = '/home/usr_name/modsec-learn/coreruleset'
-wafamole_cli_path = '/home/usr_name/modsec-learn/scripts/run_wafamole.py'
+crs_path = '/home/gfloris/modsec-learn/coreruleset'
+wafamole_cli_path = '/home/gfloris/modsec-learn/scripts/run_wafamole.py'
 
 
 target_wafs = {
@@ -23,8 +23,8 @@ target_wafs = {
     # MLModSec
     'inf_svm_pl1': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl1_config.json')),
     'inf_svm_pl2': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl2_config.json')),
-    'inf_svm_pl3': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl3_config.json.')),
-    'inf_svm_pl4': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_config.json.')),
+    'inf_svm_pl3': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl3_config.json')),
+    'inf_svm_pl4': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_config.json')),
     # MLModSec
     'log_reg_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_config.json')),
     'log_reg_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_config.json')),

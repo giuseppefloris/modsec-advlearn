@@ -55,7 +55,7 @@ class ModSecurityFeaturesExtractor:
             crs_threshold,
             crs_pl
         )
-        self._features_path      = features_path
+        self._features_path = features_path
 
 
     def extract_features(self, data):
@@ -96,6 +96,23 @@ class ModSecurityFeaturesExtractor:
 
         return X, np.array(y)
 
+    def extract_features_wafamole(self, value):
+        #print(value)
+        if len(self._crs_ids) == 0:
+            raise ValueError(
+                "No CRS rules found, perform the extraction of CRS rules IDs \
+                or load them from a file."
+            )
+
+        num_rules = len(self._crs_ids)
+        X = np.zeros((1, num_rules))
+
+        self._pymodsec._process_query(f"q={value}")
+        
+        for rule in self._pymodsec._get_triggered_rules():
+            X[0, self._crs_ids.index(rule)] = 1.0
+
+        return X
 
     def extract_crs_ids(self, data):
         """

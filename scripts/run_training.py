@@ -28,7 +28,7 @@ if __name__        == '__main__':
     models           = list(filter(lambda model: model != 'modsec', settings['params']['other_models']))
     models           +=settings['params']['models']
     penalties        = settings['params']['penalties']
-
+    
     # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
     
@@ -39,7 +39,9 @@ if __name__        == '__main__':
     training_data = loader.load_data()
 
     models_weights = dict()
-    t = [0.5, 5]
+    
+    t = [1, 2, 4]
+    
     for pl in paranoia_levels:
         # FEATURE EXTRACTION PHASE
         print('[INFO] Extracting features for PL {}...'.format(pl))
@@ -68,49 +70,49 @@ if __name__        == '__main__':
                         os.path.join(models_path, 'inf_svm_pl{}_t{}.joblib'.format(pl,numbers))
                     )
                     
-            if model_name == 'svc':
-                for penalty in penalties:
-                        model = LinearSVC(
-                            C             = 0.5,
-                            penalty       = penalty,
-                            dual='auto',
-                            class_weight  = 'balanced',
-                            random_state  = 77,
-                            fit_intercept = False,
-                        )
-                        model.fit(xtr, ytr)
-                        joblib.dump(
-                            model, 
-                            os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
-                        )
+            # if model_name == 'svc':
+            #     for penalty in penalties:
+            #             model = LinearSVC(
+            #                 C             = 0.5,
+            #                 penalty       = penalty,
+            #                 dual='auto',
+            #                 class_weight  = 'balanced',
+            #                 random_state  = 77,
+            #                 fit_intercept = False,
+            #             )
+            #             model.fit(xtr, ytr)
+            #             joblib.dump(
+            #                 model, 
+            #                 os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
+            #             )
                         
-            elif model_name == 'rf':
-                model = RandomForestClassifier(
-                    class_weight = 'balanced',
-                    random_state = 77,
-                    n_jobs       = -1
-                )
-                model.fit(xtr, ytr)
+            # elif model_name == 'rf':
+            #     model = RandomForestClassifier(
+            #         class_weight = 'balanced',
+            #         random_state = 77,
+            #         n_jobs       = -1
+            #     )
+            #     model.fit(xtr, ytr)
 
-                joblib.dump(
-                    model, 
-                    os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
-                )
+            #     joblib.dump(
+            #         model, 
+            #         os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
+            #     )
 
-            elif model_name == 'log_reg':
-                for penalty in penalties:
-                    model = LogisticRegression(
-                        C            = 0.5,
-                        penalty      = penalty,
-                        class_weight = 'balanced',
-                        random_state = 77,
-                        n_jobs       = -1,
-                        max_iter     = 1000,
-                        solver       = 'saga'
-                    )
-                    model.fit(xtr, ytr)
+            # elif model_name == 'log_reg':
+            #     for penalty in penalties:
+            #         model = LogisticRegression(
+            #             C            = 0.5,
+            #             penalty      = penalty,
+            #             class_weight = 'balanced',
+            #             random_state = 77,
+            #             n_jobs       = -1,
+            #             max_iter     = 1000,
+            #             solver       = 'saga'
+            #         )
+            #         model.fit(xtr, ytr)
 
-                    joblib.dump(
-                        model, 
-                        os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
-                    )
+            #         joblib.dump(
+            #             model, 
+            #             os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
+            #         )

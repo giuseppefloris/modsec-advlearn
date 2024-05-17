@@ -100,7 +100,7 @@ def run_wafamole(
     print("[INFO] Number of attack payloads: {}".format(len(dataset)))
 
     with open(output_path, 'w') as out_file:
-        for sample in dataset[:2001]:
+        for sample in dataset[:5001]:
             best_score, adv_sample, scores_trace, _, _, _, _ = opt.evaluate(
                 sample, 
                 max_rounds, 
@@ -119,7 +119,7 @@ def run_wafamole(
                 'scores_tarce': scores_trace
             }
             
-            out_file.write(json.dumps(adv_sample) + '\n')
+            out_file.write(json.dumps(info) + '\n')
 
 
 if __name__ == "__main__":

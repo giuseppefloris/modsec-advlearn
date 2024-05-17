@@ -97,7 +97,8 @@ class ModSecurityFeaturesExtractor:
         return X, np.array(y)
 
     def extract_features_wafamole(self, value):
-        
+        """
+        """
         if len(self._crs_ids) == 0:
             raise ValueError(
                 "No CRS rules found, perform the extraction of CRS rules IDs \

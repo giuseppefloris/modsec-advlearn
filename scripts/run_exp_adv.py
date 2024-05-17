@@ -42,7 +42,9 @@ target_wafs = {
     'rf_pl4': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_config.json')),
     # AdvModSec
     'svm_linear_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'svm_linear_crs_pl4_adv_config.json')),
-    'rf_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json'))
+    'rf_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
+    'log_reg_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_adv_config.json')),
+    'inf_svm_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
 }
 
 # thresholds = {waf: float(1e-6) for waf in target_wafs}
@@ -99,16 +101,16 @@ if __name__ == "__main__":
         raise Exception("Invalid type of dataset")
 
     dataset_path_test = os.path.join(data_base_path, 'malicious_test.json')
-    dataset_path_advtrain = os.path.join(data_base_path, 'sqli_adv_train.json')
+    dataset_path_advtrain = os.path.join(data_base_path, 'malicious_train.json')
 
     if args.type == 'test-adv':
         ### experiments ModSec and MLModSec
         test_cases = [
-            {'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000}
-            for pl in range(1, 5)
+            {'round_size': 20, 'model': 'svm_linear_pl{}'.format(pl), 'max_queries': 2000}
+                for pl in range(1, 5)
         ]
         test_cases.extend(
-            [{'round_size': 20, 'model': 'svm_linear_pl{}'.format(pl), 'max_queries': 2000} \
+            [{'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000} \
                 for pl in range(1, 5)])
         test_cases.extend(
             [{'round_size': 20, 'model': 'inf_svm_pl{}'.format(pl), 'max_queries': 2000} \
@@ -118,7 +120,9 @@ if __name__ == "__main__":
                 for pl in range(1, 5)])
         test_cases.extend(
             [{'round_size': 20, 'model': 'rf_pl{}'.format(pl), 'max_queries': 2000} \
-                for pl in range(1, 5)])
+                for pl in range(1, 5)
+            ])
+
 
         out_dir = os.path.join(base_path, 'wafamole_results', 'adv_examples_test')
         run_experiments(test_cases, out_dir, dataset_path_test)
@@ -127,7 +131,7 @@ if __name__ == "__main__":
         ### experiments adv-training
         test_cases_advtrain = [
             {'round_size': 20, 'model': '{}_pl4'.format(model), 'max_queries': 2000}
-            for model in ['svm_linear', 'rf']
+            for model in ['svm_linear', 'rf', 'log_reg', 'inf_svm']
         ]
 
         out_dir_advtrain = os.path.join(base_path, 'wafamole_results', 'adv_examples_advtrain')

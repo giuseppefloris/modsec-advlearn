@@ -121,7 +121,6 @@ class PyModSecurity():
         )
         transaction.processRequestHeaders()
         transaction.processRequestBody()
-
     
     def _process_response(self) -> float:
         """

@@ -41,7 +41,7 @@ target_wafs = {
     'rf_pl3': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl3_config.json')),
     'rf_pl4': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_config.json')),
     # AdvModSec
-    'svm_linear_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'svm_linear_crs_pl4_adv_config.json')),
+    'svm_linear_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_adv_config.json')),
     'rf_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
     'log_reg_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_adv_config.json')),
     'inf_svm_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         ### experiments AdvModSec eval
         test_cases_advmodsec = [
             {'round_size': 20, 'model': '{}_pl4_advtrain'.format(model), 'max_queries': 2000}
-            for model in ['svm_linear', 'rf']
+            for model in ['svm_linear', 'rf', 'log_reg', 'inf_svm']
         ]
 
         out_dir_advmodsec = os.path.join(base_path, 'wafamole_results', 'adv_examples_retrained_test')

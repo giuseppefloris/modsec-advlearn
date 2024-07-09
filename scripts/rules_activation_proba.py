@@ -15,20 +15,16 @@ from src.models import PyModSecurity
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 settings         = toml.load('config.toml')
-crs_dir          = settings['crs_dir']
+
 crs_ids_path     = settings['crs_ids_path']
-models_path      = settings['models_path']
 figures_path     = settings['figures_path']
 dataset_path     = settings['dataset_path']
 adv_dataset_path = settings['adv_dataset_path']
-paranoia_levels  = settings['params']['paranoia_levels'] 
-models           = settings['params']['models']
-other_models     = settings['params']['other_models']
+crs_dir          = settings['crs_dir']
 
 
 def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_labels_size=16, tick_labels_size=14):
     # setup paths
-    crs_rules_dir = crs_dir
     owasp_crs_rules_ids_filepath = crs_ids_path
     pl = 4
     adv_examples_base_path = adv_dataset_path
@@ -36,6 +32,7 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     figs_save_path = figures_path
     benign_load_path = os.path.join(data_path, 'legitimate_test.json')
     attacks_load_path = os.path.join(data_path, 'malicious_test.json')
+    adv_payloads_filename =  os.path.join(adv_examples_base_path, 'adv_train_svm_linear_pl{pl}_rs20_100rounds.json'.format(pl=pl))
 
     with open(owasp_crs_rules_ids_filepath, 'r') as fp:
         data = json.load(fp)
@@ -53,9 +50,6 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     crs_rules_ids_pl4 = crs_rules_ids_pl3 + crs_rules_ids_pl4_unique
 
     num_samples = 5000
-
-    warn_rules = [942430, 942420, 942431, 942460, 942421, 942432]
-    critical_rules = [rule for rule in crs_rules_ids_pl4 if rule not in warn_rules]
 
     assert 0 < pl < 5
 
@@ -97,9 +91,10 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     # rules to be removed from the plots: rules that are not triggered by any benign, attack and adv. samples
     rules_to_remove = []
     for rule in owasp_crs_ids:
-        if df_attack[rule].sum() == 0 and df_benign[rule].sum() == 0 and df_adv[rule].sum():
+        if df_attack[rule].sum() == 0 and df_benign[rule].sum() == 0 and df_adv[rule].sum(): 
             rules_to_remove.append(rule)
-    #print("RULES NEVER TRIGGERED: {}".format(rules_to_remove))
+            print(f'SUM {df_adv[rule].sum()} of rule {rule} is zero')
+            print("RULES NEVER TRIGGERED: {}".format(rules_to_remove))
 
     # select rules related to target PL, sort them alphabetically
     select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in rules_filter) and (rule not in rules_to_remove)])
@@ -108,7 +103,7 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     assert delta.flatten().shape[0] == len(select_rules)
 
     rules_delta = {r: s for r, s in zip(select_rules, delta.tolist())}
-    #rules_delta = dict(sorted(rules_delta.items(), key=lambda item: item[1], reverse=False))  # reverse=True
+    rules_delta = dict(sorted(rules_delta.items(), key=lambda item: item[1], reverse=False))  # reverse=True
     sorted_rules = list(rules_delta.keys())
 
     pos_rules, neg_rules, same_rules = [], [], []
@@ -126,12 +121,12 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
         sorted_rules = [rule for rule in sorted_rules if rule[3:] in rules_selector]
         rules_activation_filename = 'comparison_attack_adv_svm_new.pdf'
     else:
-        rules_activation_filename = 'comparison_attack_adv_svm.pdf'
+        rules_activation_filename = 'comparison_attack_adv_svm_1_new.pdf'
 
     adv_prob = df_adv[sorted_rules].mean().values.tolist()
-    print("adv_prob",adv_prob)
+    #print("adv_prob",adv_prob)
     attack_prob = df_attack[sorted_rules].mean().values.tolist() 
-    print("attack_prob",attack_prob)
+    #print("attack_prob",attack_prob)
     df_plot = pd.DataFrame(
         {
             'rules': sorted_rules * 2,
@@ -141,10 +136,10 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     )
 
     fig_prob, ax_prob = plt.subplots(1, 1)
-    p = so.Plot(df_plot, x='rules', y='prob', color='type').add(so.Bar(), legend=True).scale(color=['#81b8ef', '#fe6d73']).on(ax_prob).plot()
+    p = so.Plot(df_plot, x='rules', y='prob', color='type').add(so.Bar(), legend=True).scale(color=['orange', 'deepskyblue']).on(ax_prob).plot()
     ax_prob.set_xticklabels([rule[3:] for rule in sorted_rules], rotation=75, ha='right', rotation_mode='anchor')
     legend = fig_prob.legends.pop(0)
-    ax_prob.legend(legend.legendHandles, [t.get_text() for t in legend.texts], loc='upper right', fancybox=True, shadow=False, fontsize=legend_fontsize)
+    ax_prob.legend(legend.legendHandles, [t.get_text() for t in legend.texts], loc='upper left', fancybox=True, shadow=False, fontsize=legend_fontsize)
     ax_prob.set_xlabel('CRS SQLi Rules', fontsize=axis_labels_size, labelpad=10)
     ax_prob.set_ylabel('Activation probability', fontsize=axis_labels_size, labelpad=10)
     ax_prob.set_xmargin(0.05)

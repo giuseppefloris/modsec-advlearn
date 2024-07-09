@@ -4,7 +4,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.extractor import ModSecurityFeaturesExtractor
+#from src.extractor import ModSecurityFeaturesExtractor
 from wafamole.models import SklearnModelWrapper
 from wafamole.utils.check import type_check
 

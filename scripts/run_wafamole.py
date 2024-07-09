@@ -90,8 +90,8 @@ def run_wafamole(
     opt = EvasionEngine(waf, use_multiproc)
 
     try:
-        with open(dataset_path, 'r') as fp:
-            dataset = json.load(fp)
+        with open(dataset_path, 'rb') as fp:
+            dataset = pickle.load(fp)
             
 
     except Exception as error:
@@ -100,7 +100,7 @@ def run_wafamole(
     print("[INFO] Number of attack payloads: {}".format(len(dataset)))
 
     with open(output_path, 'w') as out_file:
-        for sample in dataset[2000:4001]:
+        for sample in dataset[0:2001]:
             best_score, adv_sample, scores_trace, _, _, _, _ = opt.evaluate(
                 sample, 
                 max_rounds, 

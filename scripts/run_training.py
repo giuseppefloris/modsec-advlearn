@@ -22,8 +22,10 @@ if __name__        == '__main__':
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
     models_path      = settings['models_path']
+    models_path_ds2  = settings['models_path_ds2']
     figures_path     = settings['figures_path']
     dataset_path     = settings['dataset_path']
+    dataset2_path    = settings['dataset2_path']
     paranoia_levels  = settings['params']['paranoia_levels']
     models           = list(filter(lambda model: model != 'modsec', settings['params']['other_models']))
     models           +=settings['params']['models']
@@ -33,11 +35,19 @@ if __name__        == '__main__':
     # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
     
+    # Dataset1
     loader = DataLoader(
         malicious_path  = os.path.join(dataset_path, 'malicious_train.json'),
         legitimate_path = os.path.join(dataset_path, 'legitimate_train.json')
     )    
     training_data = loader.load_data()
+
+    # Dataset2
+    loader = DataLoader(
+        malicious_path  = os.path.join(dataset2_path, 'sqli_train.pkl'),
+        legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
+    )    
+    training_data2 = loader.load_data_pkl()
 
     models_weights = dict()
     
@@ -51,7 +61,7 @@ if __name__        == '__main__':
             crs_pl       = pl
         )
     
-        xtr, ytr = extractor.extract_features(training_data)
+        xtr, ytr = extractor.extract_features(training_data2)
 
         # TRAINING PHASE
         for model_name in models:
@@ -63,7 +73,7 @@ if __name__        == '__main__':
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 
-                        os.path.join(models_path, 'inf_svm_pl{}_t{}.joblib'.format(pl,numbers))
+                        os.path.join(models_path_ds2, 'inf_svm_pl{}_t{}.joblib'.format(pl,numbers))
                     )
                     
             if model_name == 'svc':
@@ -79,7 +89,7 @@ if __name__        == '__main__':
                         model.fit(xtr, ytr)
                         joblib.dump(
                             model, 
-                            os.path.join(models_path, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
+                            os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
                         )
                         
             elif model_name == 'rf':
@@ -91,7 +101,7 @@ if __name__        == '__main__':
                 model.fit(xtr, ytr)
                 joblib.dump(
                     model, 
-                    os.path.join(models_path, 'rf_pl{}.joblib'.format(pl))
+                    os.path.join(models_path_ds2, 'rf_pl{}.joblib'.format(pl))
                 )
 
             elif model_name == 'log_reg':
@@ -108,5 +118,5 @@ if __name__        == '__main__':
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 
-                        os.path.join(models_path, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
+                        os.path.join(models_path_ds2, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
                     )

@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-
+import pickle
 
 class DataLoader:
     """
@@ -24,7 +24,32 @@ class DataLoader:
         self._malicious_path  = malicious_path
         self._legitimate_path = legitimate_path
 
-    
+    def load_data_pkl(self):
+        """
+        Load the dataset from the filesystem.
+
+        Returns:
+        --------
+            pd.DataFrame
+                The loaded dataset.
+        """
+        
+        with open(self._legitimate_path, 'rb') as file:
+            legitimate_data= pickle.load(file)
+        
+        with open(self._malicious_path, 'rb') as file:
+            malicious_data = pickle.load(file)
+
+        malicious_labels  = [1] * len(malicious_data)
+        legitimate_labels = [0] * len(legitimate_data)
+        combined_data     = malicious_data   + legitimate_data
+        combined_labels   = malicious_labels + legitimate_labels
+        
+        return pd.DataFrame({
+            'payload': combined_data,
+            'label': combined_labels
+        })
+        
     def load_data(self):
         """
         Load the dataset from the filesystem.

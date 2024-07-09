@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # IMPORTANT: Set the following paths according to your setup !!!
 base_path = '/home/gfloris/modsec-learn'
 config_path = '/home/gfloris/modsec-learn/modsec_config'
-data_base_path = '/home/gfloris/modsec-learn/data/dataset'
+data_base_path = '/home/gfloris/modsec-learn/data/dataset2'
 # base_path = os.path.abspath(os.getcwd())
 crs_path = '/home/gfloris/modsec-learn/coreruleset'
 wafamole_cli_path = '/home/gfloris/modsec-learn/scripts/run_wafamole.py'
@@ -26,24 +26,34 @@ target_wafs = {
     'inf_svm_pl3': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl3_config.json')),
     'inf_svm_pl4': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_config.json')),
     # MLModSec
-    'log_reg_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_config.json')),
-    'log_reg_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_config.json')),
-    'log_reg_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl3_config.json')),
-    'log_reg_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_config.json')),
+    'log_reg_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_l1_config.json')),
+    'log_reg_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_l1_config.json')),
+    'log_reg_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl3_l1_config.json')),
+    'log_reg_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_config.json')),
+    'log_reg_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_l2_config.json')),
+    'log_reg_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_l2_config.json')),
+    'log_reg_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl3_l2_config.json')),
+    'log_reg_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_config.json')),
     # MLModSec
-    'svm_linear_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl1_config.json')),
-    'svm_linear_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl2_config.json')),
-    'svm_linear_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl3_config.json')),
-    'svm_linear_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_config.json')),
+    'svm_linear_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl1_l1_config.json')),
+    'svm_linear_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl2_l1_config.json')),
+    'svm_linear_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl3_l1_config.json')),
+    'svm_linear_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l1_config.json')),
+    'svm_linear_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl1_l2_config.json')),
+    'svm_linear_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl2_l2_config.json')),
+    'svm_linear_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl3_l2_config.json')),
+    'svm_linear_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l2_config.json')),
     # MLModSec
     'rf_pl1': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl1_config.json')),
     'rf_pl2': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl2_config.json')),
     'rf_pl3': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl3_config.json')),
     'rf_pl4': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_config.json')),
     # AdvModSec
-    'svm_linear_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_adv_config.json')),
+    'svm_linear_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l1_adv_config.json')),
+    'svm_linear_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l2_adv_config.json')),
     'rf_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
-    'log_reg_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_adv_config.json')),
+    'log_reg_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_adv_config.json')),
+    'log_reg_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_adv_config.json')),
     'inf_svm_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
 }
 
@@ -99,50 +109,62 @@ if __name__ == "__main__":
 
     if args.type not in ['test-adv', 'advtrain', 'advmodsec-test-adv']:
         raise Exception("Invalid type of dataset")
-
-    dataset_path_test = os.path.join(data_base_path, 'malicious_test.json')
-    dataset_path_advtrain = os.path.join(data_base_path, 'malicious_train.json')
+    
+    dataset_path_test_1 = os.path.join(data_base_path, 'malicious_test.json')
+    dataset_path_advtrain_1 = os.path.join(data_base_path, 'malicious_train.json')
+    dataset_path_test = os.path.join(data_base_path, 'sqli_test.pkl')
+    dataset_path_advtrain = os.path.join(data_base_path, 'sqli_train.pkl')
 
     if args.type == 'test-adv':
-        ### experiments ModSec and MLModSec
+        ### experiments ModSec and MLModSec 
         test_cases = [
-            {'round_size': 20, 'model': 'svm_linear_pl{}'.format(pl), 'max_queries': 2000}
+            {'round_size': 20, 'model': 'svm_linear_l2_pl{}'.format(pl), 'max_queries': 2000}
                 for pl in range(1, 5)
         ]
+        # test_cases.extend(
+        #     [{'round_size': 20, 'model': 'svm_linear_l2_pl{}'.format(pl), 'max_queries': 2000} \
+        #         for pl in range(1, 5)])
+        # test_cases.extend(
+        #     [{'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000} \
+        #         for pl in range(1, 5)])
+        # test_cases.extend(
+        #     [{'round_size': 20, 'model': 'inf_svm_pl{}'.format(pl), 'max_queries': 2000} \
+        #         for pl in range(1, 5)])
+        # test_cases.extend(
+        #     [{'round_size': 20, 'model': 'log_reg_l1_pl{}'.format(pl), 'max_queries': 2000} \
+        #         for pl in range(1, 5)])
         test_cases.extend(
-            [{'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000} \
+            [{'round_size': 20, 'model': 'log_reg_l2_pl{}'.format(pl), 'max_queries': 2000} \
                 for pl in range(1, 5)])
-        test_cases.extend(
-            [{'round_size': 20, 'model': 'inf_svm_pl{}'.format(pl), 'max_queries': 2000} \
-                for pl in range(1, 5)])
-        test_cases.extend(
-            [{'round_size': 20, 'model': 'log_reg_pl{}'.format(pl), 'max_queries': 2000} \
-                for pl in range(1, 5)])
-        test_cases.extend(
-            [{'round_size': 20, 'model': 'rf_pl{}'.format(pl), 'max_queries': 2000} \
-                for pl in range(1, 5)
-            ])
+        # test_cases.extend(
+        #     [{'round_size': 20, 'model': 'rf_pl{}'.format(pl), 'max_queries': 2000} \
+        #         for pl in range(1, 5)
+        #     ])
 
 
-        out_dir = os.path.join(base_path, 'wafamole_results', 'adv_examples_test')
-        run_experiments(test_cases, out_dir, dataset_path_test)
+        out_dir = os.path.join(
+            base_path, 'wafamole_results/results_dataset', 'adv_examples_test'
+        )
+        run_experiments(test_cases, out_dir, dataset_path_test_1)
 
     elif args.type == 'advtrain':
         ### experiments adv-training
         test_cases_advtrain = [
             {'round_size': 20, 'model': '{}_pl4'.format(model), 'max_queries': 2000}
-            for model in ['svm_linear', 'rf', 'log_reg', 'inf_svm']
+            for model in ['svm_linear_l1','svm_linear_l2']
         ]
 
-        out_dir_advtrain = os.path.join(base_path, 'wafamole_results', 'adv_examples_advtrain')
+        out_dir_advtrain = os.path.join(
+            base_path, 'wafamole_results/results_dataset_2', 'adv_examples_advtrain'
+        )
         run_experiments(test_cases_advtrain, out_dir_advtrain, dataset_path_advtrain)
 
     else:  # advmodsec-test-adv
         ### experiments AdvModSec eval
         test_cases_advmodsec = [
             {'round_size': 20, 'model': '{}_pl4_advtrain'.format(model), 'max_queries': 2000}
-            for model in ['svm_linear', 'rf', 'log_reg', 'inf_svm']
+            for model in ['svm_linear_l1','svm_linear_l2']
         ]
 
-        out_dir_advmodsec = os.path.join(base_path, 'wafamole_results', 'adv_examples_retrained_test')
+        out_dir_advmodsec = os.path.join(base_path, 'wafamole_results/results_dataset_2', 'adv_examples_retrained_test')
         run_experiments(test_cases_advmodsec, out_dir_advmodsec, dataset_path_test)

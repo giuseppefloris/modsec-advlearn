@@ -3,10 +3,8 @@ import os
 
 
 input_files = [
-    "wafamole_results/adv_examples_retrained_test/output_inf_svm_pl4_rs20_100rounds.json",
-    "wafamole_results/adv_examples_retrained_test/output_log_reg_pl4_rs20_100rounds.json",
-    "wafamole_results/adv_examples_retrained_test/output_rf_pl4_rs20_100rounds.json",
-    "wafamole_results/adv_examples_retrained_test/output_svm_linear_pl4_rs20_100rounds.json"
+    "wafamole_results/results_dataset_2/adv_examples_retrained_test/output_svm_linear_l1_pl4_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_retrained_test/output_svm_linear_l2_pl4_rs20_100rounds.json"
 ]
 
 def clean_payload(payload):

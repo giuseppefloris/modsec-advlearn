@@ -1,0 +1,7 @@
+{
+    "sklearn_clf_path": "/home/gfloris/modsec-learn/data/models_ds2/linear_svc_pl1_l1.joblib",
+    "rules_path": "/home/gfloris/modsec-learn/coreruleset/rules",
+    "crs_rules_ids_path": "/home/gfloris/modsec-learn/data/crs_sqli_ids_4.0.0.json",
+    "crs_pl": 1,
+    "crs_threshold": 5.0
+}

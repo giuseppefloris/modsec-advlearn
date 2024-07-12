@@ -18,18 +18,17 @@ from src.utils.plotting import plot_roc
 
 
 if  __name__ == '__main__':
-    test_adv         = False
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
     models_path_ds2  = settings['models_path_ds2']      
     figures_path     = settings['figures_path']
     dataset2_path    = settings['dataset2_path']
-    paranoia_levels  = settings['params']['paranoia_levels'] if test_adv else [4]
+    paranoia_levels  = settings['params']['paranoia_levels'] 
     models           = settings['params']['models']
     other_models     = settings['params']['other_models']
     penalties        = settings['params']['penalties']
-    fig, axs         = plt.subplots(1, 6)
+    fig, axs         = plt.subplots(2, 4)
     zoom_axs         = dict()
     
     
@@ -132,82 +131,163 @@ if  __name__ == '__main__':
         adv_svm_linear_l2_xts, adv_svm_linear_l2_yts = extractor.extract_features(adv_svm_linear_l2_test_data)
         adv_rf_xts, adv_rf_yts = extractor.extract_features(adv_rf_test_data)
         
-        if test_adv:
-            
-            for model_name in other_models:
-                print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
-                    
-                if model_name == 'modsec':
-                    label_legend = 'ModSec'
-                    color        = 'red'
-                    ms_adv_label_legend = ''
-                    ms_adv_settings = {'color': 'red', 'linestyle': 'dashed'}
-                    waf = PyModSecurity(
-                        rules_dir = crs_dir,
-                        pl        = pl
-                    )
-                    y_scores = waf.predict(test_data['payload'])
-                    ms_adv_y_scores = waf.predict(ms_adv_test_data['payload'])
-                    
-                    plot_roc(
-                        yts, 
-                        y_scores, 
-                        label_legend       = label_legend,
-                        ax=axs[0, pl-1],
-                        settings           = {'color': color},
-                        plot_rand_guessing = False,
-                        log_scale          = True,
-                        update_roc_values  = True if pl == 1 else False,
-                        include_zoom       = False,
-                        zoom_axs           = zoom_axs,
-                        pl                 = pl
-                    )
-                    
-                    plot_roc(
-                        ms_adv_yts,
-                        ms_adv_y_scores,
-                        label_legend=ms_adv_label_legend,
-                        ax=axs[1, pl-1],
-                        settings=ms_adv_settings,
-                        plot_rand_guessing=False,
-                        log_scale=True,
-                        update_roc_values=True if pl == 1 else False,
-                        include_zoom=False,
-                        zoom_axs=zoom_axs,
-                        pl=pl
-                    )
+       
+        
+        for model_name in other_models:
+            print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
+                
+            if model_name == 'modsec':
+                label_legend = 'ModSec'
+                color        = 'red'
+                ms_adv_label_legend = ''
+                ms_adv_settings = {'color': 'red', 'linestyle': 'dashed'}
+                waf = PyModSecurity(
+                    rules_dir = crs_dir,
+                    pl        = pl
+                )
+                y_scores = waf.predict(test_data['payload'])
+                ms_adv_y_scores = waf.predict(ms_adv_test_data['payload'])
+                
+                plot_roc(
+                    yts, 
+                    y_scores, 
+                    label_legend       = label_legend,
+                    ax=axs[0, pl-1],
+                    settings           = {'color': color},
+                    plot_rand_guessing = False,
+                    log_scale          = True,
+                    update_roc_values  = True if pl == 1 else False,
+                    include_zoom       = False,
+                    zoom_axs           = zoom_axs,
+                    pl                 = pl
+                )
+                
+                plot_roc(
+                    ms_adv_yts,
+                    ms_adv_y_scores,
+                    label_legend=ms_adv_label_legend,
+                    ax=axs[1, pl-1],
+                    settings=ms_adv_settings,
+                    plot_rand_guessing=False,
+                    log_scale=True,
+                    update_roc_values=True if pl == 1 else False,
+                    include_zoom=False,
+                    zoom_axs=zoom_axs,
+                    pl=pl
+                )
 
+                
+            elif model_name == 'infsvm':
+                label_legend  = f'SecSVM'
+                color = 'darkmagenta'
+                adv_label_legend = ''
+                adv_settings = {'color': 'darkmagenta', 'linestyle': 'dashed'}
+                model         = joblib.load(
+                    os.path.join(models_path_ds2, 'inf_svm_pl{}_t0.5.joblib'.format(pl))
+                )
+                y_scores     = model.decision_function(xts)
+                adv_y_scores = model.decision_function(adv_inf_svm_xts)
+                # print("coef\n",model.coef_)
+                # print("intercept\n",model.intercept_)
+                
+                plot_roc(
+                    yts, 
+                    y_scores, 
+                    label_legend       = label_legend,
+                    ax=axs[0, pl-1],
+                    settings           = {'color': color},
+                    plot_rand_guessing = False,
+                    log_scale          = True,
+                    update_roc_values  = True if pl == 1 else False,
+                    include_zoom       = False,
+                    zoom_axs           = zoom_axs,
+                    pl                 = pl
+                )
+                
+                
+                plot_roc(
+                    adv_inf_svm_yts,
+                    adv_y_scores,
+                    label_legend=adv_label_legend,
+                    ax=axs[1, pl-1],
+                    settings=adv_settings,
+                    plot_rand_guessing=False,
+                    log_scale=True,
+                    update_roc_values=True if pl == 1 else False,
+                    include_zoom=False,
+                    zoom_axs=zoom_axs,
+                    pl=pl
+                )
+            elif model_name == 'rf':
+                label_legend = 'RF'
+                color        = 'green'
+                adv_label_legend = ''
+                adv_settings = {'color': 'green', 'linestyle': 'dashed'}
+                model        = joblib.load(
+                    os.path.join(models_path_ds2, 'rf_pl{}.joblib'.format(pl))
+                )
+                y_scores     = model.predict_proba(xts)[:, 1]
+                adv_y_scores = model.predict_proba(adv_rf_xts)[:, 1]
+                
+                plot_roc(
+                    yts, 
+                    y_scores, 
+                    label_legend       = label_legend,
+                    ax=axs[0, pl-1],
+                    settings           = {'color': color},
+                    plot_rand_guessing = False,
+                    log_scale          = True,
+                    update_roc_values  = True if pl == 1 else False,
+                    include_zoom       = False,
+                    zoom_axs           = zoom_axs,
+                    pl                 = pl
+                )
+                plot_roc(
+                    adv_rf_yts,
+                    adv_y_scores,
+                    label_legend=adv_label_legend,
+                    ax=axs[1, pl-1],
+                    settings=adv_settings,
+                    plot_rand_guessing=False,
+                    log_scale=True,
+                    update_roc_values=True if pl == 1 else False,
+                    include_zoom=False,
+                    zoom_axs=zoom_axs,
+                    pl=pl
+                )
                     
-                elif model_name == 'infsvm':
-                    label_legend  = f'SecSVM'
-                    color = 'darkmagenta'
+        for model_name in models:
+            print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))   
+            for penalty in penalties:   
+                if model_name == 'svc':
+                    label_legend  = f'SVM – $\ell_{penalty[1]}$'
+                    settings      = {'color': 'blue' if penalty == 'l1' else 'aqua', 'linestyle': 'solid'}
                     adv_label_legend = ''
-                    adv_settings = {'color': 'darkmagenta', 'linestyle': 'dashed'}
+                    adv_settings = {'color': 'blue' if penalty == 'l1' else 'aqua', 'linestyle': 'dashed'}
                     model         = joblib.load(
-                        os.path.join(models_path_ds2, 'inf_svm_pl{}_t0.5.joblib'.format(pl))
+                        os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl,penalty))
                     )
                     y_scores     = model.decision_function(xts)
-                    adv_y_scores = model.decision_function(adv_inf_svm_xts)
-                    # print("coef\n",model.coef_)
-                    # print("intercept\n",model.intercept_)
+                    adv_y_scores = model.decision_function(adv_svm_linear_l1_xts if penalty == 'l1' else adv_svm_linear_l2_xts)
+
+                    # print(f'[DEBUG] adv_y_scores_l1.shape: {adv_y_scores_l1.shape}')
+                    # print(f'[DEBUG] adv_y_scores_l2.shape: {adv_y_scores_l2.shape}')
                     
                     plot_roc(
                         yts, 
                         y_scores, 
                         label_legend       = label_legend,
-                        ax=axs[0, pl-1],
-                        settings           = {'color': color},
+                        ax                 = axs[0, pl-1],
+                        settings           = settings,
                         plot_rand_guessing = False,
                         log_scale          = True,
                         update_roc_values  = True if pl == 1 else False,
                         include_zoom       = False,
                         zoom_axs           = zoom_axs,
                         pl                 = pl
-                    )
-                    
-                    
+                    )   
                     plot_roc(
-                        adv_inf_svm_yts,
+                        adv_svm_linear_l1_yts if penalty == 'l1' else adv_svm_linear_l2_yts,
                         adv_y_scores,
                         label_legend=adv_label_legend,
                         ax=axs[1, pl-1],
@@ -219,32 +299,35 @@ if  __name__ == '__main__':
                         zoom_axs=zoom_axs,
                         pl=pl
                     )
-                elif model_name == 'rf':
-                    label_legend = 'RF'
-                    color        = 'green'
+                    
+                
+                
+                elif model_name == 'log_reg':
+                    label_legend  = f'LR – $\ell_{penalty[1]}$'
+                    settings      = {'color': 'orange' if penalty == 'l1' else 'chocolate', 'linestyle': 'solid'}
                     adv_label_legend = ''
-                    adv_settings = {'color': 'green', 'linestyle': 'dashed'}
-                    model        = joblib.load(
-                        os.path.join(models_path_ds2, 'rf_pl{}.joblib'.format(pl))
+                    adv_settings = {'color': 'orange' if penalty =='l1' else 'chocolate', 'linestyle': 'dashed'}
+                    model         = joblib.load(
+                        os.path.join(models_path_ds2, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
                     )
-                    y_scores     = model.predict_proba(xts)[:, 1]
-                    adv_y_scores = model.predict_proba(adv_rf_xts)[:, 1]
+                    y_scores      = model.predict_proba(xts)[:, 1]
+                    adv_y_scores  = model.predict_proba(adv_log_reg_l1_xts if penalty == 'l1' else adv_log_reg_l2_xts)[:, 1]
                     
                     plot_roc(
                         yts, 
                         y_scores, 
                         label_legend       = label_legend,
                         ax=axs[0, pl-1],
-                        settings           = {'color': color},
+                        settings           = settings,
                         plot_rand_guessing = False,
                         log_scale          = True,
                         update_roc_values  = True if pl == 1 else False,
                         include_zoom       = False,
                         zoom_axs           = zoom_axs,
                         pl                 = pl
-                    )
+                    )   
                     plot_roc(
-                        adv_rf_yts,
+                        adv_log_reg_l1_yts if penalty == 'l1' else adv_log_reg_l2_yts,
                         adv_y_scores,
                         label_legend=adv_label_legend,
                         ax=axs[1, pl-1],
@@ -256,339 +339,42 @@ if  __name__ == '__main__':
                         zoom_axs=zoom_axs,
                         pl=pl
                     )
-                        
-            for model_name in models:
-                print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))   
-                for penalty in penalties:   
-                    if model_name == 'svc':
-                        label_legend  = f'SVM – $\ell_{penalty[1]}$'
-                        settings      = {'color': 'blue' if penalty == 'l1' else 'aqua', 'linestyle': 'solid'}
-                        adv_label_legend = ''
-                        adv_settings = {'color': 'blue' if penalty == 'l1' else 'aqua', 'linestyle': 'dashed'}
-                        model         = joblib.load(
-                            os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl,penalty))
-                        )
-                        y_scores     = model.decision_function(xts)
-                        adv_y_scores = model.decision_function(adv_svm_linear_l1_xts if penalty == 'l1' else adv_svm_linear_l2_xts)
-
-                        # print(f'[DEBUG] adv_y_scores_l1.shape: {adv_y_scores_l1.shape}')
-                        # print(f'[DEBUG] adv_y_scores_l2.shape: {adv_y_scores_l2.shape}')
-                        
-                        plot_roc(
-                            yts, 
-                            y_scores, 
-                            label_legend       = label_legend,
-                            ax                 = axs[0, pl-1],
-                            settings           = settings,
-                            plot_rand_guessing = False,
-                            log_scale          = True,
-                            update_roc_values  = True if pl == 1 else False,
-                            include_zoom       = False,
-                            zoom_axs           = zoom_axs,
-                            pl                 = pl
-                        )   
-                        plot_roc(
-                            adv_svm_linear_l1_yts if penalty == 'l1' else adv_svm_linear_l2_yts,
-                            adv_y_scores,
-                            label_legend=adv_label_legend,
-                            ax=axs[1, pl-1],
-                            settings=adv_settings,
-                            plot_rand_guessing=False,
-                            log_scale=True,
-                            update_roc_values=True if pl == 1 else False,
-                            include_zoom=False,
-                            zoom_axs=zoom_axs,
-                            pl=pl
-                        )
-                        
-                    
-                    
-                    elif model_name == 'log_reg':
-                        label_legend  = f'LR – $\ell_{penalty[1]}$'
-                        settings      = {'color': 'orange' if penalty == 'l1' else 'chocolate', 'linestyle': 'solid'}
-                        adv_label_legend = ''
-                        adv_settings = {'color': 'orange' if penalty =='l1' else 'chocolate', 'linestyle': 'dashed'}
-                        model         = joblib.load(
-                            os.path.join(models_path_ds2, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
-                        )
-                        y_scores      = model.predict_proba(xts)[:, 1]
-                        adv_y_scores  = model.predict_proba(adv_log_reg_l1_xts if penalty == 'l1' else adv_log_reg_l2_xts)[:, 1]
-                        
-                        plot_roc(
-                            yts, 
-                            y_scores, 
-                            label_legend       = label_legend,
-                            ax=axs[0, pl-1],
-                            settings           = settings,
-                            plot_rand_guessing = False,
-                            log_scale          = True,
-                            update_roc_values  = True if pl == 1 else False,
-                            include_zoom       = False,
-                            zoom_axs           = zoom_axs,
-                            pl                 = pl
-                        )   
-                        plot_roc(
-                            adv_log_reg_l1_yts if penalty == 'l1' else adv_log_reg_l2_yts,
-                            adv_y_scores,
-                            label_legend=adv_label_legend,
-                            ax=axs[1, pl-1],
-                            settings=adv_settings,
-                            plot_rand_guessing=False,
-                            log_scale=True,
-                            update_roc_values=True if pl == 1 else False,
-                            include_zoom=False,
-                            zoom_axs=zoom_axs,
-                            pl=pl
-                        )
-                   
-            # Final global settings for the figure
-            # for idx, ax in enumerate(axs.flatten()):
-            #     ax.set_title('PL {}'.format(idx+1), fontsize=16)
-            #     ax.xaxis.set_tick_params(labelsize = 14)
-            #     ax.yaxis.set_tick_params(labelsize = 14)
-            #     ax.xaxis.label.set_size(16)
-            #     ax.yaxis.label.set_size(16)
-
-            for row in range(2):
-                for col in range(4):
-                    axs[row, col].set_title(f'PL {col + 1}' if row == 0 else f'Adv PL {col + 1}', fontsize=16)
-                    axs[row, col].xaxis.set_tick_params(labelsize=14)
-                    axs[row, col].yaxis.set_tick_params(labelsize=14)
-                    axs[row, col].xaxis.label.set_size(16)
-                    axs[row, col].yaxis.label.set_size(16)
-                    
-            #handles, labels = axs.flatten()[0].get_legend_handles_labels()      
-            handles, labels = axs[0, 0].get_legend_handles_labels()
-            fig.legend(
-                handles, 
-                labels,
-                loc            = 'upper center',
-                bbox_to_anchor = (0.5, -0.01),
-                fancybox       = True,
-                shadow         = True,
-                ncol           = 7,
-                fontsize       = 20
-            )
-            fig.set_size_inches(16, 10)
-            fig.tight_layout(pad = 2.0)
-            fig.savefig(
-                os.path.join(figures_path, 'roc_curves_test_adv_ds2_pr2.pdf'),
-                dpi         = 600,
-                format      = 'pdf',
-                bbox_inches = "tight"
-            )
-
-        else:  
-            adv_infsvm_pl_path = os.path.join(dataset2_path, 'adv_train_test_inf_svm_pl4_rs20_100rounds.pkl')
-            adv_log_reg_l1_path = os.path.join(dataset2_path, 'adv_train_test_log_reg_l1_pl4_rs20_100rounds.pkl')
-            adv_log_reg_l2_path = os.path.join(dataset2_path, 'adv_train_test_log_reg_l2_pl4_rs20_100rounds.pkl')
-            adv_svm_linear_l1_path = os.path.join(dataset2_path, 'adv_train_test_svm_linear_l1_pl4_rs20_100rounds.pkl')
-            adv_svm_linear_l2_path = os.path.join(dataset2_path, 'adv_train_test_svm_linear_l2_pl4_rs20_100rounds.pkl')
-            adv_rf_path = os.path.join(dataset2_path, 'adv_train_test_rf_pl4_rs20_100rounds.pkl')
-            
-            adv_inf_svm_loader = DataLoader(
-                        malicious_path=adv_infsvm_pl_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            adv_log_reg_l1_loader = DataLoader(
-                        malicious_path=adv_log_reg_l1_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            adv_log_reg_l2_loader = DataLoader(
-                        malicious_path=adv_log_reg_l2_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            adv_svm_linear_l1_loader = DataLoader(
-                        malicious_path=adv_svm_linear_l1_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            adv_svm_linear_l2_loader = DataLoader(
-                        malicious_path=adv_svm_linear_l2_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            adv_rf_loader = DataLoader(
-                        malicious_path=adv_rf_path,
-                        legitimate_path=legitimate_test_path
-                    )
-            
-            ms_adv_test_data = ms_adv_loader.load_data_pkl()
-            adv_inf_svm_test_data = adv_inf_svm_loader.load_data_pkl()
-            adv_log_reg_l1_test_data = adv_log_reg_l1_loader.load_data_pkl()
-            adv_log_reg_l2_test_data = adv_log_reg_l2_loader.load_data_pkl()
-            adv_svm_linear_test_l1_data = adv_svm_linear_l1_loader.load_data_pkl()
-            adv_svm_linear_test_l2_data = adv_svm_linear_l2_loader.load_data_pkl()
-            adv_rf_test_data = adv_rf_loader.load_data_pkl()
-            
-            extractor = ModSecurityFeaturesExtractor(
-                crs_ids_path = crs_ids_path,
-                crs_path     = crs_dir,
-                crs_pl       = pl
-            )
-
-            xts, yts = extractor.extract_features(test_data)
-            adv_inf_svm_xts, adv_inf_svm_yts = extractor.extract_features(adv_inf_svm_test_data)
-            adv_log_reg_l1_xts, adv_log_reg_l1_yts = extractor.extract_features(adv_log_reg_l1_test_data)
-            adv_log_reg_l2_xts, adv_log_reg_l2_yts = extractor.extract_features(adv_log_reg_l2_test_data)
-            adv_svm_linear_l1_xts, adv_svm_linear_l1_yts = extractor.extract_features(adv_svm_linear_l1_test_data)
-            adv_svm_linear_l2_xts, adv_svm_linear_l2_yts = extractor.extract_features(adv_svm_linear_l2_test_data)
-            print(adv_svm_linear_l1_xts.shape, adv_svm_linear_l1_yts.shape)
-            adv_rf_xts, adv_rf_yts = extractor.extract_features(adv_rf_test_data)
-            print(adv_rf_yts.shape, adv_rf_xts.shape)
-            
-            
-            model_settings = {
-                'svc_l1': {
-                    'label': 'Linear SVM $\ell_1$',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'linear_svc_pl4_l1.joblib')),
-                    'adv_model': joblib.load(os.path.join(models_path_ds2, 'adv_linear_svc_pl4_l1.joblib')),
-                    'adv_xts': adv_svm_linear_l1_xts,
-                    'adv_yts': adv_svm_linear_l1_yts,
-                },
-                'svc_l2': {
-                    'label': 'Linear SVM $\ell_2$',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'linear_svc_pl4_l2.joblib')),
-                    'adv_model': joblib.load(os.path.join(models_path_ds2, 'adv_linear_svc_pl4_l2.joblib')),
-                    'adv_xts': adv_svm_linear_l2_xts,
-                    'adv_yts': adv_svm_linear_l2_yts
-                },
-                'rf': {
-                    'label': 'RF',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'rf_pl4.joblib')),
-                    'adv_model': joblib.load(os.path.join(models_path_ds2, 'adv_rf_pl4.joblib')),
-                    'adv_xts': adv_rf_xts,
-                    'adv_yts': adv_rf_yts
-                },
-                'log_reg_l1': {
-                    'label': 'LR $\ell_1$',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'log_reg_pl4_l1.joblib')),
-                    'adv_model': joblib.load(os.path.join(models_path_ds2, 'adv_log_reg_pl4_l1.joblib')),
-                    'adv_xts': adv_log_reg_l1_xts,
-                    'adv_yts': adv_log_reg_l1_yts
-                },
-                'log_reg_l2': {
-                    'label': 'LR $\\ell_2$',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'log_reg_pl4_l2.joblib')),
-                    'adv_model': joblib.load(os.path.join(models_path_ds2, 'adv_log_reg_pl4_l2.joblib')),
-                    'adv_xts': adv_log_reg_l2_xts,
-                    'adv_yts': adv_log_reg_l2_yts
-                },
-                'infsvm': {
-                    'label': 'Sec SVM',
-                    'color': 'orange',
-                    'adv_color': 'deepskyblue',
-                    'model': joblib.load(os.path.join(models_path_ds2, 'inf_svm_pl4_t0.5.joblib')),
-                    'adv_xts': adv_inf_svm_xts,
-                    'adv_yts': adv_inf_svm_yts
-                }
-            }     
-            
-            
-            for idx, (model_name, settings) in enumerate(model_settings.items()):
-                #ax = axs[idx // 2, idx % 2] 
-                ax = axs[idx]
-                print(f'[INFO] Evaluating {model_name} model for PL 4...')
                 
-                y_scores = settings['model'].decision_function(xts) if model_name in ['svc_l1', 'svc_l2', 'infsvm'] else settings['model'].predict_proba(xts)[:, 1]
-                plot_roc(
-                    yts,
-                    y_scores,
-                    label_legend='MLModSec test',
-                    ax=ax,
-                    settings={'color': settings['color'], 'linestyle': 'solid'},
-                    plot_rand_guessing=False,
-                    log_scale=True,
-                    update_roc_values=False,
-                    include_zoom=False,
-                    zoom_axs=zoom_axs,
-                    pl=pl
-                )
-                
-                adv_y_scores = settings['model'].decision_function(settings['adv_xts']) if model_name in ['svc_l1', 'svc_l2', 'infsvm'] else settings['model'].predict_proba(settings['adv_xts'])[:, 1]
-                plot_roc(
-                    settings['adv_yts'],
-                    adv_y_scores,
-                    label_legend='MLModSec test-adv',
-                    ax=ax,
-                    settings={'color': settings['color'], 'linestyle': 'dashed'},
-                    plot_rand_guessing=False,
-                    log_scale=True,
-                    update_roc_values=False,
-                    include_zoom=False,
-                    zoom_axs=zoom_axs,
-                    pl=pl
-                )
-                if model_name != 'infsvm':
-                    adv_trained_y_scores = settings['adv_model'].decision_function(xts) if model_name in ['svc_l1','svc_l2'] else settings['adv_model'].predict_proba(xts)[:, 1]
-                    
-                    plot_roc(
-                        yts,
-                        adv_trained_y_scores,
-                        label_legend='AdvModSec test',
-                        ax=ax,
-                        settings={'color': settings['adv_color'], 'linestyle': 'solid'},
-                        plot_rand_guessing=False,
-                        log_scale=True,
-                        update_roc_values=False,
-                        include_zoom=False,
-                        zoom_axs=zoom_axs,
-                        pl=pl
-                    )
-                
-                    adv_trained_adv_y_scores = settings['adv_model'].decision_function(settings['adv_xts']) if model_name in ['svc_l1', 'svc_l2'] else settings['adv_model'].predict_proba(settings['adv_xts'])[:, 1]
-                    plot_roc(
-                        settings['adv_yts'],
-                        adv_trained_adv_y_scores,
-                        label_legend='AdvModSec test-adv',
-                        ax=ax,
-                        settings={'color': settings['adv_color'], 'linestyle': 'dashed'},
-                        plot_rand_guessing=False,
-                        log_scale=True,
-                        update_roc_values=False,
-                        include_zoom=False,
-                        zoom_axs=zoom_axs,
-                        pl=pl
-                    )
-
-            
         # Final global settings for the figure
+        # for idx, ax in enumerate(axs.flatten()):
+        #     ax.set_title('PL {}'.format(idx+1), fontsize=16)
+        #     ax.xaxis.set_tick_params(labelsize = 14)
+        #     ax.yaxis.set_tick_params(labelsize = 14)
+        #     ax.xaxis.label.set_size(16)
+        #     ax.yaxis.label.set_size(16)
 
-                ax.set_title(f'{settings["label"]} PL4', fontsize=16)
-                ax.xaxis.set_tick_params(labelsize = 14)
-                ax.yaxis.set_tick_params(labelsize = 14)
-                ax.xaxis.label.set_size(16)
-                ax.yaxis.label.set_size(16)
+        for row in range(2):
+            for col in range(4):
+                axs[row, col].set_title(f'PL {col + 1}' if row == 0 else f'Adv PL {col + 1}', fontsize=16)
+                axs[row, col].xaxis.set_tick_params(labelsize=14)
+                axs[row, col].yaxis.set_tick_params(labelsize=14)
+                axs[row, col].xaxis.label.set_size(16)
+                axs[row, col].yaxis.label.set_size(16)
+                
+        #handles, labels = axs.flatten()[0].get_legend_handles_labels()      
+        handles, labels = axs[0, 0].get_legend_handles_labels()
+        fig.legend(
+            handles, 
+            labels,
+            loc            = 'upper center',
+            bbox_to_anchor = (0.5, -0.01),
+            fancybox       = True,
+            shadow         = True,
+            ncol           = 7,
+            fontsize       = 20
+        )
+        fig.set_size_inches(16, 10)
+        fig.tight_layout(pad = 2.0)
+        fig.savefig(
+            os.path.join(figures_path, 'roc_curves_test_adv_ds2_pr2p.pdf'),
+            dpi         = 600,
+            format      = 'pdf',
+            bbox_inches = "tight"
+        )
 
-            handles, labels = axs[0].get_legend_handles_labels()      
-
-            fig.legend(
-                handles, 
-                labels,
-                loc            = 'upper center',
-                bbox_to_anchor = (0.5, -0.01),
-                fancybox       = True,
-                shadow         = True,
-                ncol           = 6,
-                fontsize       = 13
-            )
-            fig.set_size_inches(22, 5)
-            fig.tight_layout(pad = 2.0)
-            fig.savefig(
-                os.path.join(figures_path, 'LLLL.pdf'),
-                dpi         = 600,
-                format      = 'pdf',
-                bbox_inches = "tight"
-            )
-
-
-        
-        
+    

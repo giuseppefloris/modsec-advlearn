@@ -3,8 +3,22 @@ import os
 
 
 input_files = [
-    "wafamole_results/results_dataset_2/adv_examples_retrained_test/output_svm_linear_l1_pl4_rs20_100rounds.json",
-    "wafamole_results/results_dataset_2/adv_examples_retrained_test/output_svm_linear_l2_pl4_rs20_100rounds.json"
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l1_pl1_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l1_pl2_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l1_pl3_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l1_pl4_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l2_pl1_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l2_pl2_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l2_pl3_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_log_reg_l2_pl4_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l1_pl1_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l1_pl2_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l1_pl3_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l1_pl4_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l2_pl1_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l2_pl2_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l2_pl3_rs20_100rounds.json",
+    "wafamole_results/results_dataset_2/adv_examples_test/output_svm_linear_l2_pl4_rs20_100rounds.json"
 ]
 
 def clean_payload(payload):
@@ -25,7 +39,7 @@ def process_file(input_file):
     output_data = adv_payloads
     
 
-    output_file = input_file.replace("output_", "adv_train_test_")
+    output_file = input_file.replace("output_", "adv_test_")
     
 
     with open(output_file, 'w', encoding='utf-8') as f:

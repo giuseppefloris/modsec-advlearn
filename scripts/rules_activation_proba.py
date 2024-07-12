@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import joblib
 import json
+import pickle
 import numpy as np
 import pandas as pd
 import seaborn
@@ -19,6 +20,7 @@ settings         = toml.load('config.toml')
 crs_ids_path     = settings['crs_ids_path']
 figures_path     = settings['figures_path']
 dataset_path     = settings['dataset_path']
+pl               = settings['params']['paranoia_levels']
 adv_dataset_path = settings['adv_dataset_path']
 crs_dir          = settings['crs_dir']
 
@@ -32,7 +34,7 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     figs_save_path = figures_path
     benign_load_path = os.path.join(data_path, 'legitimate_test.json')
     attacks_load_path = os.path.join(data_path, 'malicious_test.json')
-    adv_payloads_filename =  os.path.join(adv_examples_base_path, 'adv_train_svm_linear_pl{pl}_rs20_100rounds.json'.format(pl=pl))
+    adv_payloads_filename =  os.path.join(adv_examples_base_path, 'adv_test_svm_linear_l2_pl{pl}_rs20_100rounds.json'.format(pl=pl))
 
     with open(owasp_crs_rules_ids_filepath, 'r') as fp:
         data = json.load(fp)
@@ -49,11 +51,11 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     crs_rules_ids_pl3 = crs_rules_ids_pl2 + crs_rules_ids_pl3_unique
     crs_rules_ids_pl4 = crs_rules_ids_pl3 + crs_rules_ids_pl4_unique
 
-    num_samples = 5000
-
+    num_samples_adv = 2001
+    num_samples_base = 5000
     assert 0 < pl < 5
 
-    adv_payloads_filename =  os.path.join(adv_examples_base_path, 'adv_train_svm_linear_pl{pl}_rs20_100rounds.json'.format(pl=pl))
+    adv_payloads_filename =  os.path.join(adv_examples_base_path, 'adv_test_svm_linear_l2_pl{pl}_rs20_100rounds.json'.format(pl=pl))
 
     if pl == 1:
         rules_filter = crs_rules_ids_pl1
@@ -83,10 +85,10 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     adv_dataset = data_adv[data_adv['label'] == 1]
     xts_adv, _ = extractor.extract_features(adv_dataset)
     
-    df_benign = pd.DataFrame(data=xts[yts == 0], index=list(range(num_samples)), columns=owasp_crs_ids)
-    df_attack = pd.DataFrame(data=xts[yts == 1], index=list(range(num_samples)), columns=owasp_crs_ids)
+    df_benign = pd.DataFrame(data=xts[yts == 0], index=list(range(num_samples_base)), columns=owasp_crs_ids)
+    df_attack = pd.DataFrame(data=xts[yts == 1], index=list(range(num_samples_base)), columns=owasp_crs_ids)
 
-    df_adv = pd.DataFrame(data=xts_adv, index=list(range(num_samples)), columns=owasp_crs_ids)
+    df_adv = pd.DataFrame(data=xts_adv, index=list(range(num_samples_adv)), columns=owasp_crs_ids)
 
     # rules to be removed from the plots: rules that are not triggered by any benign, attack and adv. samples
     rules_to_remove = []
@@ -121,7 +123,7 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
         sorted_rules = [rule for rule in sorted_rules if rule[3:] in rules_selector]
         rules_activation_filename = 'comparison_attack_adv_svm_new.pdf'
     else:
-        rules_activation_filename = 'comparison_attack_adv_svm_1_new.pdf'
+        rules_activation_filename = 'comparison_attack_adv_svm_l2_ds1.pdf'
 
     adv_prob = df_adv[sorted_rules].mean().values.tolist()
     #print("adv_prob",adv_prob)

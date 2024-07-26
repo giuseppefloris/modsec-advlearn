@@ -1,13 +1,17 @@
+"""
+
+"""
+
 import numpy as np
+import matplotlib.pyplot as plt
+import scipy
+from sklearn.base import BaseEstimator, ClassifierMixin
 from cvxpy import *
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
-from sklearn.base import BaseEstimator, ClassifierMixin
-import numpy as np
-import scipy
 
-class InfSVM2(BaseEstimator, ClassifierMixin):
+
+class InfSVM(BaseEstimator, ClassifierMixin):
     def __init__(self, t=1):
         self.coef_ = None
         self.intercept_ = None

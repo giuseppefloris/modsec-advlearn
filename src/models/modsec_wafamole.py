@@ -1,5 +1,6 @@
 """
-Wrapper model for (py)ModSecurity
+A wrapper for the ModSecurity CRS WAF compliant with the payload
+format by WAF-A-MoLE dataset.
 """
 
 import os

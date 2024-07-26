@@ -1,17 +1,18 @@
+"""
+
+"""
 import click
 import json
 import numpy as np
 import random
 import pickle
 import re
-import sqlglot
 import toml
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.models import PyModSecurityWafamole
-
 from wafamole.evasion import EvasionEngine
 from wafamole.exceptions.models_exceptions import UnknownModelError
 from src.models.sklearn_modsecurity_ml_waf import SklearnModSecurityMlWaf
@@ -31,14 +32,18 @@ def _load_json_conf(json_conf_path):
 def wafamole():
     pass
 
-
 @wafamole.command()
-@click.option("--waf-type", "-w", default="token", help="Target WAF", type=str)
-@click.option("--timeout", "-t", default=14400, help="Timeout when evading the WAF", type=int)
+@click.option(
+    "--waf-type", "-w", default="token", help="Target WAF", type=str
+)
+@click.option(
+    "--timeout", "-t", default=14400, help="Timeout when evading the WAF", type=int
+)
 @click.option(
     "--max-rounds", "-r", default=1000, help="Maximum number of fuzzing rounds", type=int
 )
-@click.option("--round-size", "-s", default=20, help="Fuzzing step size for each round (parallel fuzzing steps)", type=int
+@click.option(
+    "--round-size", "-s", default=20, help="Fuzzing step size for each round (parallel fuzzing steps)", type=int
 )
 @click.option(
     "--threshold", default=0.5, help="Classification threshold of the target WAF (default 0.5)", type=float
@@ -66,11 +71,11 @@ def run_wafamole(
     output_path,
     use_multiproc
 ):
-
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
     models_path      = settings['models_path']
+    n_adv_samples    = 2000
     
     np.random.seed(random_seed)
     random.seed(random_seed)
@@ -92,15 +97,13 @@ def run_wafamole(
     try:
         with open(dataset_path, 'rb') as fp:
             dataset = pickle.load(fp)
-            
-
     except Exception as error:
         raise SystemExit("Error loading the dataset: {}".format(error))
     
     print("[INFO] Number of attack payloads: {}".format(len(dataset)))
 
     with open(output_path, 'w') as out_file:
-        for sample in dataset[0:2001]:
+        for sample in dataset[:n_adv_samples]:
             best_score, adv_sample, scores_trace, _, _, _, _ = opt.evaluate(
                 sample, 
                 max_rounds, 
@@ -119,7 +122,7 @@ def run_wafamole(
                 'scores_tarce': scores_trace
             }
             
-            out_file.write(json.dumps(info) + '\n')
+            out_file.write(json.dumps(info, indent=4) + '\n')
 
 
 if __name__ == "__main__":

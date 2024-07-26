@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
-from src.models import InfSVM2
+from src.models import InfSVM
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -69,7 +69,7 @@ if __name__        == '__main__':
             
             if model_name == 'infsvm':
                 for numbers in t: 
-                    model = InfSVM2(numbers)
+                    model = InfSVM(numbers)
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 

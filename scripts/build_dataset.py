@@ -3,7 +3,7 @@ This script is used to build a dataset for the training/testing phase composed
 by 25k samples of malicious and 25k samples of legitimate payloads. 
 The training and testing are splitted in 80% and 20% respectively. 
 The dataset is built starting from the full dataset available in the following
-repository https://github.com/christianscano/modsec-test-dataset/
+repository https://github.com/pralab/http-traffic-dataset.
 """
 
 import os

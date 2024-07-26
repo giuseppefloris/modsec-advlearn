@@ -99,7 +99,6 @@ def run_experiments(test_cases, out_dir, dataset_path):
 
 
 if __name__ == "__main__":
-
     if not os.path.isdir(base_path):
         raise Exception("Please set the base path. Invalid path specified : {}".format(base_path))
     
@@ -110,37 +109,36 @@ if __name__ == "__main__":
     if args.type not in ['test-adv', 'advtrain', 'advmodsec-test-adv']:
         raise Exception("Invalid type of dataset")
     
-    dataset_path_test_1 = os.path.join(data_base_path, 'malicious_test.json')
+    dataset_path_test_1     = os.path.join(data_base_path, 'malicious_test.json')
     dataset_path_advtrain_1 = os.path.join(data_base_path, 'malicious_train.json')
-    dataset_path_test = os.path.join(data_base_path, 'sqli_test.pkl')
-    dataset_path_advtrain = os.path.join(data_base_path, 'sqli_train.pkl')
+    dataset_path_test       = os.path.join(data_base_path, 'sqli_test.pkl')
+    dataset_path_advtrain   = os.path.join(data_base_path, 'sqli_train.pkl')
 
     if args.type == 'test-adv':
-        ### experiments ModSec and MLModSec 
+        # Experiments ModSec and MLModSec 
         test_cases = [
-            {'round_size': 20, 'model': 'svm_linear_l2_pl{}'.format(pl), 'max_queries': 2000}
+            {'round_size': 20, 'model': 'svm_linear_l1_pl{}'.format(pl), 'max_queries': 2000}
                 for pl in range(1, 5)
         ]
-        # test_cases.extend(
-        #     [{'round_size': 20, 'model': 'svm_linear_l2_pl{}'.format(pl), 'max_queries': 2000} \
-        #         for pl in range(1, 5)])
-        # test_cases.extend(
-        #     [{'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000} \
-        #         for pl in range(1, 5)])
-        # test_cases.extend(
-        #     [{'round_size': 20, 'model': 'inf_svm_pl{}'.format(pl), 'max_queries': 2000} \
-        #         for pl in range(1, 5)])
-        # test_cases.extend(
-        #     [{'round_size': 20, 'model': 'log_reg_l1_pl{}'.format(pl), 'max_queries': 2000} \
-        #         for pl in range(1, 5)])
+        test_cases.extend(
+            [{'round_size': 20, 'model': 'svm_linear_l2_pl{}'.format(pl), 'max_queries': 2000} \
+                for pl in range(1, 5)])
+        test_cases.extend(
+            [{'round_size': 20, 'model': 'ms_pl{}'.format(pl), 'max_queries': 2000} \
+                for pl in range(1, 5)])
+        test_cases.extend(
+            [{'round_size': 20, 'model': 'inf_svm_pl{}'.format(pl), 'max_queries': 2000} \
+                for pl in range(1, 5)])
+        test_cases.extend(
+            [{'round_size': 20, 'model': 'log_reg_l1_pl{}'.format(pl), 'max_queries': 2000} \
+                for pl in range(1, 5)])
         test_cases.extend(
             [{'round_size': 20, 'model': 'log_reg_l2_pl{}'.format(pl), 'max_queries': 2000} \
                 for pl in range(1, 5)])
-        # test_cases.extend(
-        #     [{'round_size': 20, 'model': 'rf_pl{}'.format(pl), 'max_queries': 2000} \
-        #         for pl in range(1, 5)
-        #     ])
-
+        test_cases.extend(
+            [{'round_size': 20, 'model': 'rf_pl{}'.format(pl), 'max_queries': 2000} \
+                for pl in range(1, 5)
+            ])
 
         out_dir = os.path.join(
             base_path, 'wafamole_results/results_dataset', 'adv_examples_test'

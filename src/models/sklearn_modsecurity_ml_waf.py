@@ -3,8 +3,6 @@ A wrapper for the ModSecurity CRS WAF, used by WAF-A-MoLE during the
 generation of adversarial examples.
 """
 
-import json
-import numpy as np
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

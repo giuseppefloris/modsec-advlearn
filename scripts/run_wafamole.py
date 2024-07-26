@@ -1,6 +1,7 @@
 """
-
+The script is used as interface to the WAFamole evasion engine.
 """
+
 import click
 import json
 import numpy as np

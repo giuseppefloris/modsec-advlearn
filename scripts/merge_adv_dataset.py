@@ -44,7 +44,6 @@ if merge:
         print(f"Saved merged dataset to {output_path}")
 
     print("All datasets merged and saved successfully.")
-    
 else:
     json_files = [
         "wafamole_results/results_dataset_2/adv_payloads_test/adv_train_test_svm_linear_l1_pl4_rs20_100rounds.json",

@@ -1,3 +1,8 @@
+"""
+The script extracts the rule IDs from the CRS ruleset file REQUEST-942-APPLICATION-ATTACK-SQLI.conf,
+and save them into a JSON file.
+"""
+
 import os
 import re
 import toml
@@ -23,4 +28,3 @@ if __name__ == '__main__':
         
     with open(crs_ids_path, 'w') as file:
         json.dump(data, file, indent=4)
-    

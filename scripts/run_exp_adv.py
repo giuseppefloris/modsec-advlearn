@@ -1,3 +1,7 @@
+"""
+The script runs the experiments for the adversarial examples generation using the WAF-a-MoLE tool.
+"""
+
 import shlex
 import subprocess
 import os
@@ -5,12 +9,13 @@ import sys
 import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+
 # IMPORTANT: Set the following paths according to your setup !!!
-base_path = '/home/gfloris/modsec-learn'
-config_path = '/home/gfloris/modsec-learn/modsec_config'
-data_base_path = '/home/gfloris/modsec-learn/data/dataset2'
-# base_path = os.path.abspath(os.getcwd())
-crs_path = '/home/gfloris/modsec-learn/coreruleset'
+base_path         = '/home/gfloris/modsec-learn'
+config_path       = '/home/gfloris/modsec-learn/modsec_config'
+data_base_path    = '/home/gfloris/modsec-learn/data/dataset2'
+# base_path         = os.path.abspath(os.getcwd())
+crs_path          = '/home/gfloris/modsec-learn/coreruleset'
 wafamole_cli_path = '/home/gfloris/modsec-learn/scripts/run_wafamole.py'
 
 
@@ -51,18 +56,17 @@ target_wafs = {
     # AdvModSec
     'svm_linear_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l1_adv_config.json')),
     'svm_linear_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l2_adv_config.json')),
-    'rf_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
-    'log_reg_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_adv_config.json')),
-    'log_reg_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_adv_config.json')),
-    'inf_svm_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
+    'rf_pl4_advtrain'           : ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
+    'log_reg_l1_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_adv_config.json')),
+    'log_reg_l2_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_adv_config.json')),
+    'inf_svm_pl4_advtrain'      : ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
 }
 
-# thresholds = {waf: float(1e-6) for waf in target_wafs}
-thresholds = {waf: 0.0 for waf in target_wafs}
-rand_seed = 0
-round_size_default = 20
+thresholds          = {waf: 0.0 for waf in target_wafs}
+rand_seed           = 0
+round_size_default  = 20
 max_queries_default = 2000
-use_multiproc = True
+use_multiproc       = True
 
 
 def run_experiments(test_cases, out_dir, dataset_path):

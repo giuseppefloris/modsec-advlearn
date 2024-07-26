@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 
-if __name__        == '__main__':
+if __name__  == '__main__':
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
@@ -35,14 +35,14 @@ if __name__        == '__main__':
     # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
     
-    # Dataset1
+    # Dataset ModSec-learn
     loader = DataLoader(
         malicious_path  = os.path.join(dataset_path, 'malicious_train.json'),
         legitimate_path = os.path.join(dataset_path, 'legitimate_train.json')
     )    
     training_data = loader.load_data()
 
-    # Dataset2
+    # Dataset WAF-A-MoLE
     loader = DataLoader(
         malicious_path  = os.path.join(dataset2_path, 'sqli_train.pkl'),
         legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
@@ -78,19 +78,19 @@ if __name__        == '__main__':
                     
             if model_name == 'svc':
                 for penalty in penalties:
-                        model = LinearSVC(
-                            C             = 0.5,
-                            penalty       = penalty,
-                            dual='auto',
-                            class_weight  = 'balanced',
-                            random_state  = 77,
-                            fit_intercept = False,
-                        )
-                        model.fit(xtr, ytr)
-                        joblib.dump(
-                            model, 
-                            os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
-                        )
+                    model = LinearSVC(
+                        C             = 0.5,
+                        penalty       = penalty,
+                        dual          = 'auto',
+                        class_weight  = 'balanced',
+                        random_state  = 77,
+                        fit_intercept = False,
+                    )
+                    model.fit(xtr, ytr)
+                    joblib.dump(
+                        model, 
+                        os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
+                    )
                         
             elif model_name == 'rf':
                 model = RandomForestClassifier(

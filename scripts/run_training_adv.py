@@ -1,6 +1,6 @@
 """
-This script is used to train the models with the adversarial dataset, different paranoia levels and penalties.
-The trained models are saved as joblib files in the models directory.
+This script is used to train the models with the adversarial dataset, different paranoia 
+levels and penalties. The trained models are saved as joblib files in the models directory.
 """
 
 import toml
@@ -49,27 +49,26 @@ if __name__        == '__main__':
         legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
     )   
     loader_adv_rf = DataLoader(
-        malicious_path=os.path.join(dataset2_path, 'adv_train_rf_pl4_rs20_100rounds.pkl'),
-        legitimate_path=os.path.join(dataset2_path, 'benign_train.pkl')
+        malicious_path  = os.path.join(dataset2_path, 'adv_train_rf_pl4_rs20_100rounds.pkl'),
+        legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
     )
     loader_adv_svm_l1 = DataLoader(                    
-        malicious_path=os.path.join(dataset2_path, 'adv_train_svm_linear_l1_pl4_rs20_100rounds.pkl'),
-        legitimate_path=os.path.join(dataset2_path, 'benign_train.pkl')
+        malicious_path  = os.path.join(dataset2_path, 'adv_train_svm_linear_l1_pl4_rs20_100rounds.pkl'),
+        legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
     )
     loader_adv_svm_l2 = DataLoader(                    
-        malicious_path=os.path.join(dataset2_path, 'adv_train_svm_linear_l2_pl4_rs20_100rounds.pkl'),
-        legitimate_path=os.path.join(dataset2_path, 'benign_train.pkl')
+        malicious_path  = os.path.join(dataset2_path, 'adv_train_svm_linear_l2_pl4_rs20_100rounds.pkl'),
+        legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
     )
     
-    training_data_adv_inf_svm = loader_adv_inf_svm.load_data_pkl()
+    training_data_adv_inf_svm    = loader_adv_inf_svm.load_data_pkl()
     training_data_adv_log_reg_l1 = loader_adv_log_reg_l1.load_data_pkl()
     training_data_adv_log_reg_l2 = loader_adv_log_reg_l2.load_data_pkl()
-    training_data_adv_rf = loader_adv_rf.load_data_pkl()
-    training_data_adv_svm_l1 = loader_adv_svm_l1.load_data_pkl()
-    training_data_adv_svm_l2 = loader_adv_svm_l2.load_data_pkl()
+    training_data_adv_rf         = loader_adv_rf.load_data_pkl()
+    training_data_adv_svm_l1     = loader_adv_svm_l1.load_data_pkl()
+    training_data_adv_svm_l2     = loader_adv_svm_l2.load_data_pkl()
     
     models_weights = dict()
-    
     
     # FEATURE EXTRACTION PHASE
     print('[INFO] Extracting features for PL {}...'.format(pl))
@@ -80,15 +79,12 @@ if __name__        == '__main__':
         crs_pl       = pl
     )
 
-    xtr_adv_inf_svm, ytr_adv_inf_svm = extractor.extract_features(training_data_adv_inf_svm)
+    xtr_adv_inf_svm   , ytr_adv_inf_svm    = extractor.extract_features(training_data_adv_inf_svm)
     xtr_adv_log_reg_l1, ytr_adv_log_reg_l1 = extractor.extract_features(training_data_adv_log_reg_l1)
     xtr_adv_log_reg_l2, ytr_adv_log_reg_l2 = extractor.extract_features(training_data_adv_log_reg_l2)
-    xtr_adv_rf, ytr_adv_rf = extractor.extract_features(training_data_adv_rf)
-    print(xtr_adv_rf.shape, ytr_adv_rf.shape)
-    xtr_adv_svm_l1, ytr_adv_svm_l1 = extractor.extract_features(training_data_adv_svm_l1)
-    print(xtr_adv_svm_l1.shape, ytr_adv_svm_l1.shape)
-    xtr_adv_svm_l2, ytr_adv_svm_l2 = extractor.extract_features(training_data_adv_svm_l2)
-    print(xtr_adv_svm_l2.shape, ytr_adv_svm_l2.shape)
+    xtr_adv_rf        , ytr_adv_rf         = extractor.extract_features(training_data_adv_rf)
+    xtr_adv_svm_l1    , ytr_adv_svm_l1     = extractor.extract_features(training_data_adv_svm_l1)
+    xtr_adv_svm_l2    , ytr_adv_svm_l2     = extractor.extract_features(training_data_adv_svm_l2)
     
     # TRAINING PHASE
     for model_name in models:
@@ -108,19 +104,19 @@ if __name__        == '__main__':
                 model = LinearSVC(
                     C             = 0.5,
                     penalty       = penalty,
-                    dual='auto',
+                    dual          = 'auto',
                     class_weight  = 'balanced',
                     random_state  = 77,
                     fit_intercept = False,
-                    max_iter=7000
+                    max_iter      = 7000
                 )
+                
                 if penalty == 'l1':
                     model.fit(xtr_adv_svm_l1, ytr_adv_svm_l1)
-                    y_pred = model.predict(xtr_adv_svm_l1)
+                    y_pred   = model.predict(xtr_adv_svm_l1)
                     accuracy = accuracy_score(ytr_adv_svm_l1, y_pred)
                 else:
                     model.fit(xtr_adv_svm_l2, ytr_adv_svm_l2)
-                
                 
                 joblib.dump(
                     model, 
@@ -150,10 +146,12 @@ if __name__        == '__main__':
                     max_iter     = 1000,
                     solver       = 'saga'
                 )
+                
                 if penalty == 'l1':
                     model.fit(xtr_adv_log_reg_l1, ytr_adv_log_reg_l1)
                 else:
                     model.fit(xtr_adv_log_reg_l2, ytr_adv_log_reg_l2)
+                
                 joblib.dump(
                     model, 
                     os.path.join(models_path_ds2, 'adv_log_reg_pl{}_{}.joblib'.format(pl,penalty))

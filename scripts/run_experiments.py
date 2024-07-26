@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import toml
 import sys
 import joblib
-import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.models import PyModSecurity
@@ -35,7 +34,7 @@ if  __name__ == '__main__':
     # LOADING DATASET PHASE
     print('[INFO] Loading dataset...')
     
-    # Dataset1
+    # Dataset ModSec-learn
     legitimate_train_path = os.path.join(dataset_path, 'legitimate_train.json')
     malicious_train_path  = os.path.join(dataset_path, 'malicious_train.json')
     legitimate_test_path  = os.path.join(dataset_path, 'legitimate_test.json')
@@ -53,7 +52,7 @@ if  __name__ == '__main__':
     )    
     test_data = loader.load_data()
     
-    # Dataset2
+    # Dataset WAF-A-MoLE
     benign_train_path = os.path.join(dataset2_path, 'benign_train.pkl')
     sqli_train_path   = os.path.join(dataset2_path, 'sqli_train.pkl')
     benign_test_path  = os.path.join(dataset2_path, 'benign_test.pkl')
@@ -70,7 +69,6 @@ if  __name__ == '__main__':
         legitimate_path = benign_test_path
     )    
     test_data2 = loader.load_data_pkl()
-    #print(test_data2)
     
     # STARTING EXPERIMENTS
     for pl in paranoia_levels:
@@ -84,7 +82,6 @@ if  __name__ == '__main__':
     
         xts, yts = extractor.extract_features(test_data2)
         
-
         for model_name in other_models:
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
                         
@@ -99,7 +96,7 @@ if  __name__ == '__main__':
             elif  model_name == 'modsec':
                 label_legend = 'ModSec'
                 color        = 'red'
-                waf = PyModSecurity(
+                waf          = PyModSecurity(
                     rules_dir = crs_dir,
                     pl        = pl
                 )
@@ -107,13 +104,13 @@ if  __name__ == '__main__':
                 
             elif model_name == 'infsvm':
                 label_legend  = f'SecSVM '
-                color = 'magenta'
+                color         = 'magenta'
                 model         = joblib.load(
                     os.path.join(models_path_ds2, 'inf_svm_pl{}_t0.5.joblib'.format(pl))
                 )
                 y_scores     = model.decision_function(xts)
-                print("coef\n",model.coef_)
-                print("intercept\n",model.intercept_)
+                print("coef\n", model.coef_)
+                print("intercept\n", model.intercept_)
                 
             plot_roc(
                 yts, 
@@ -133,7 +130,6 @@ if  __name__ == '__main__':
             print('[INFO] Evaluating {} model for PL {}...'.format(model_name, pl))
                 
             for penalty in penalties: 
-                
                 if model_name == 'svc':
                     label_legend  = f'SVM - $\ell_{penalty[1]}$'
                     settings      = {'color': 'blue', 'linestyle': 'solid' if penalty == 'l1' else '--'}
@@ -164,34 +160,31 @@ if  __name__ == '__main__':
                     pl                 = pl
                 )
 
-    # Final global settings for the figure
-            for idx, ax in enumerate(axs.flatten()):
-                ax.set_title('PL {}'.format(idx+1), fontsize=16)
-                ax.xaxis.set_tick_params(labelsize = 14)
-                ax.yaxis.set_tick_params(labelsize = 14)
-                ax.xaxis.label.set_size(16)
-                ax.yaxis.label.set_size(16)
+        # Final global settings for the figure
+        for idx, ax in enumerate(axs.flatten()):
+            ax.set_title('PL {}'.format(idx+1), fontsize=16)
+            ax.xaxis.set_tick_params(labelsize = 14)
+            ax.yaxis.set_tick_params(labelsize = 14)
+            ax.xaxis.label.set_size(16)
+            ax.yaxis.label.set_size(16)
 
-            handles, labels = axs.flatten()[0].get_legend_handles_labels()      
-            
-            fig.legend(
-                handles, 
-                labels,
-                loc            = 'upper center',
-                bbox_to_anchor = (0.5, -0.01),
-                fancybox       = True,
-                shadow         = True,
-                ncol           = 6,
-                fontsize       = 13
-            )
-            fig.set_size_inches(17, 5)
-            fig.tight_layout(pad = 2.0)
-            fig.savefig(
-                os.path.join(figures_path, 'roc_curves_ds2.pdf'),
-                dpi         = 600,
-                format      = 'pdf',
-                bbox_inches = "tight"
-            )
-
-    
-    
+        handles, labels = axs.flatten()[0].get_legend_handles_labels()      
+        
+        fig.legend(
+            handles, 
+            labels,
+            loc            = 'upper center',
+            bbox_to_anchor = (0.5, -0.01),
+            fancybox       = True,
+            shadow         = True,
+            ncol           = 6,
+            fontsize       = 13
+        )
+        fig.set_size_inches(17, 5)
+        fig.tight_layout(pad = 2.0)
+        fig.savefig(
+            os.path.join(figures_path, 'roc_curves_ds2.pdf'),
+            dpi         = 600,
+            format      = 'pdf',
+            bbox_inches = "tight"
+        )

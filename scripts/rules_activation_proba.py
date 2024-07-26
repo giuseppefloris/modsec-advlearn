@@ -17,6 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 
+
 settings         = toml.load('config.toml')
 crs_ids_path     = settings['crs_ids_path']
 figures_path     = settings['figures_path']

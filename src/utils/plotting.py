@@ -46,8 +46,8 @@ def update_roc(fpr, tpr):
 def plot_roc(
     y_true, 
     y_scores,
-    label_legend, 
     ax,
+    label_legend       = '', 
     settings           = None,
     plot_rand_guessing = True,
     log_scale          = False,

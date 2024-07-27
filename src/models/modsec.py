@@ -86,7 +86,6 @@ class PyModSecurity():
                     .format(pl, threshold)
             )
 
-
     def _process_query(self, payload: str):
         """
         Process the provided payload using the ModSecurity CRS WAF.
@@ -143,7 +142,6 @@ class PyModSecurity():
                 return self._rules_logger_cb.get_score()
         else:
             raise SystemExit("Callback to process rules not initialized")
-
 
     def predict(self, X):
         """
@@ -210,7 +208,6 @@ class RulesLogger:
         """
         return self._SEVERITY_SCORE[severity]
     
-
     def __init__(self, threshold=5.0, regex_rules_filter=None, debug=False):
         """
         Constructor of RulesLogger class
@@ -231,7 +228,6 @@ class RulesLogger:
         self._score           = 0.0
         self._threshold       = threshold
         self._status          = 200
-
 
     def __call__(self, data, rule_message):
         """
@@ -263,7 +259,6 @@ class RulesLogger:
         if self._score >= self._threshold:
             self._status = 403
 
-
     def get_triggered_rules(self):
         """
         Get the rules triggered
@@ -274,7 +269,6 @@ class RulesLogger:
                 The list of rules triggered.
         """
         return self._rules_triggered
-
 
     def get_score(self):
         """

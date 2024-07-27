@@ -1,5 +1,6 @@
 """
-The script is used as interface to the WAFamole evasion engine.
+This script is used as interface to the WAFamole evasion engine. 
+It is used in conjunction with the `generate_adv_samples.py` script to generate adversarial examples using WAF-a-MoLE.
 """
 
 import click
@@ -74,12 +75,12 @@ def run_wafamole(
 ):
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
-    crs_ids_path     = settings['crs_ids_path']
-    models_path      = settings['models_path']
     n_adv_samples    = 2000
     
     np.random.seed(random_seed)
     random.seed(random_seed)
+
+    print("[INFO] Loading the target WAF...")
 
     if re.match(r"modsecurity_pl[1-4]", waf_type):
         pl = int(waf_type[-1]) 
@@ -93,8 +94,9 @@ def run_wafamole(
     else:
         raise UnknownModelError("Unsupported WAF type: {}".format(waf_type))
 
-    opt = EvasionEngine(waf, use_multiproc)
+    engine = EvasionEngine(waf, use_multiproc)
 
+    print("[INFO] Loading the dataset...")
     try:
         with open(dataset_path, 'rb') as fp:
             dataset = pickle.load(fp)
@@ -105,7 +107,7 @@ def run_wafamole(
 
     with open(output_path, 'w') as out_file:
         for sample in dataset[:n_adv_samples]:
-            best_score, adv_sample, scores_trace, _, _, _, _ = opt.evaluate(
+            best_score, adv_sample, scores_trace, _, _, _, _ = engine.evaluate(
                 sample, 
                 max_rounds, 
                 round_size, 
@@ -123,6 +125,7 @@ def run_wafamole(
                 'scores_tarce': scores_trace
             }
             
+            # Save the adversarial example to the output file
             out_file.write(json.dumps(info, indent=4) + '\n')
 
 

@@ -11,17 +11,10 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
-settings         = toml.load('config.toml')
-crs_dir          = settings['crs_dir']
-crs_ids_path     = settings['crs_ids_path']
-models_path      = settings['models_path']
-figures_path     = settings['figures_path']
-dataset_path     = settings['dataset_path']
-paranoia_levels  = settings['params']['paranoia_levels'] 
-models           = settings['params']['models']
-other_models     = settings['params']['other_models']
-
-def plot_rules_distr_ms():
+def plot_rules_distr_ms(
+    crs_ids_path: str,
+    figures_path: str,
+):
     def fmt_label_pie(pct, allvals):
         absolute = int(np.round(pct/100.*np.sum(allvals)))
         ws = '\n' if absolute > 5 else ' '
@@ -145,7 +138,19 @@ def plot_rules_distr_ms():
 
     fig_rules_weights.set_size_inches(7, 7.5)
     fig_rules_weights.tight_layout()
-    fig_rules_weights.savefig(os.path.join(figs_save_path, 'ms_weights_analysis_pl_weights.pdf'), dpi=600, format='pdf', bbox_inches="tight")
+    fig_rules_weights.savefig(
+        os.path.join(figs_save_path, 'ms_weights_analysis_pl_weights.pdf'), 
+        dpi         = 600,
+        format      = 'pdf',
+        bbox_inches = "tight"
+    )
 
 if __name__ == '__main__':
-    plot_rules_distr_ms()
+    settings         = toml.load('config.toml')
+    crs_ids_path     = settings['crs_ids_path']
+    figures_path     = settings['figures_path']
+
+    plot_rules_distr_ms(
+        crs_ids_path = crs_ids_path,
+        figures_path = figures_path
+    )

@@ -80,12 +80,7 @@ def analyze_weights(
         }
     )
 
-    _ = so.Plot(
-        df_plot, 
-        x     = 'rules',
-        y     = 'weight',
-        color = 'type'
-    ) \
+    so.Plot(df_plot, x = 'rules', y = 'weight', color = 'type')\
         .add(so.Bar()) \
         .scale(color=['#aedc41', '#81b8ef', '#fe6d73']) \
         .on(axs) \

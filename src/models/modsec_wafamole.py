@@ -4,11 +4,9 @@ format by WAF-A-MoLE dataset.
 """
 
 import os
-from pathlib import Path
 import re
-from urllib.parse import quote_plus, urlencode
-from enum import Enum
 
+from urllib.parse import quote_plus
 from ModSecurity import ModSecurity, RulesSet, Transaction, LogProperty
 from wafamole.models import Model
 from utils import type_check
@@ -77,7 +75,6 @@ class PyModSecurityWafamole(Model):
     def extract_features(self, value):
         return value
 
-
     def classify(self, value: str):
         """
         Predict the class of the provided payload using the ModSecurity CRS WAF.
@@ -96,7 +93,6 @@ class PyModSecurityWafamole(Model):
         """
         self._process_query(value)
         return self._process_response()
-
 
     def _process_query(self, payload: str):
         """
@@ -133,7 +129,6 @@ class PyModSecurityWafamole(Model):
         transaction.processRequestHeaders()
         transaction.processRequestBody()
 
-    
     def _process_response(self) -> float:
         """
         Processes the HTTP response received from the ModSecurity CRS
@@ -149,7 +144,6 @@ class PyModSecurityWafamole(Model):
             return self._rules_logger_cb.get_score()
         else:
             raise SystemExit("Callback to process rules not initialized")
-
 
     def _get_triggered_rules(self):
         """
@@ -187,7 +181,6 @@ class RulesLogger:
         """
         return self._SEVERITY_SCORE[severity]
     
-
     def __init__(self, threshold=5.0, regex_rules_filter=None, debug=False):
         """
         Constructor of RulesLogger class
@@ -208,7 +201,6 @@ class RulesLogger:
         self._score           = 0.0
         self._threshold       = threshold
         self._status          = 200
-
 
     def __call__(self, data, rule_message):
         """
@@ -240,7 +232,6 @@ class RulesLogger:
         if self._score >= self._threshold:
             self._status = 403
 
-
     def get_triggered_rules(self):
         """
         Get the rules triggered
@@ -251,7 +242,6 @@ class RulesLogger:
                 The list of rules triggered.
         """
         return self._rules_triggered
-
 
     def get_score(self):
         """

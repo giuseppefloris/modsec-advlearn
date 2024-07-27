@@ -7,7 +7,6 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-#from src.extractor import ModSecurityFeaturesExtractor
 from wafamole.models import SklearnModelWrapper
 from wafamole.utils.check import type_check
 
@@ -27,6 +26,8 @@ class SklearnModSecurityMlWaf(SklearnModelWrapper):
         type_check(crs_rules_ids_path, str, "crs_rules_ids_path")
         type_check(rules_path, str, "rules_path")
         
+        from src.extractor import ModSecurityFeaturesExtractor
+
         self._feat_builder = ModSecurityFeaturesExtractor(
             crs_rules_ids_path, 
             rules_path,

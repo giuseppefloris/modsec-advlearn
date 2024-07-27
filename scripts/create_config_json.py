@@ -7,8 +7,9 @@ import os
 
 # Directory paths
 base_dir   = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-config_dir = os.path.join(base_dir,"modsec_config")
-models_dir = os.path.join(base_dir, "data/models_newds")
+config_dir = os.path.join(base_dir, "wafamole_config")
+# NOTE: This should be change, accordin to which dataset you are using 
+models_dir = os.path.join(base_dir, "data/models_wafamole")
 rules_dir  = os.path.join(base_dir, "coreruleset", "rules")
 ids_path   = os.path.join(base_dir, "data/crs_sqli_ids_4.0.0.json")
 

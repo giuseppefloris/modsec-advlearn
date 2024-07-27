@@ -1,6 +1,5 @@
 """
-This script is used to plot the activation probability of the OWASP CRS rules for 
-the d adversarial samples.
+This script is used to plot the activation probability of the OWASP CRS rules.
 """
 
 import matplotlib.pyplot as plt
@@ -18,25 +17,20 @@ from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 
 
-settings         = toml.load('config.toml')
-crs_ids_path     = settings['crs_ids_path']
-figures_path     = settings['figures_path']
-dataset_path     = settings['dataset_path']
-pl               = settings['params']['paranoia_levels']
-adv_dataset_path = settings['adv_dataset_path']
-crs_dir          = settings['crs_dir']
 
 
-def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_labels_size=16, tick_labels_size=14):
-    owasp_crs_rules_ids_filepath = crs_ids_path
-    pl                           = 4
-    adv_examples_base_path       = adv_dataset_path
-    data_path                    = dataset_path
-    figs_save_path               = figures_path
-    benign_load_path             = os.path.join(data_path, 'legitimate_test.json')
-    attacks_load_path            = os.path.join(data_path, 'malicious_test.json')
-    adv_payloads_filename        = os.path.join(adv_examples_base_path, 'adv_test_svm_linear_l2_pl{pl}_rs20_100rounds.json'.format(pl=pl))
-
+def analyze_rules_importance(
+    owasp_crs_rules_ids_filepath: str,
+    figs_save_path              : str,
+    benign_load_path            : str,
+    attacks_load_path           : str,
+    adv_payloads_filename       : str,
+    pl               = 4,
+    rules_selector   = None,
+    legend_fontsize  = 13,
+    axis_labels_size = 16,
+    tick_labels_size = 14
+):
     with open(owasp_crs_rules_ids_filepath, 'r') as fp:
         data = json.load(fp)
         owasp_crs_ids = sorted(data['rules_ids'])
@@ -82,14 +76,14 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
         crs_path     = crs_dir,
         crs_pl       = pl
     )
+
     xts, yts    = extractor.extract_features(dataset)
     adv_dataset = data_adv[data_adv['label'] == 1]
     xts_adv, _  = extractor.extract_features(adv_dataset)
     
     df_benign = pd.DataFrame(data=xts[yts == 0], index=list(range(num_samples_base)), columns=owasp_crs_ids)
     df_attack = pd.DataFrame(data=xts[yts == 1], index=list(range(num_samples_base)), columns=owasp_crs_ids)
-
-    df_adv = pd.DataFrame(data=xts_adv, index=list(range(num_samples_adv)), columns=owasp_crs_ids)
+    df_adv    = pd.DataFrame(data=xts_adv, index=list(range(num_samples_adv)), columns=owasp_crs_ids)
 
     # rules to be removed from the plots: rules that are not triggered by any benign, attack and adv. samples
     rules_to_remove = []
@@ -124,7 +118,7 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
         sorted_rules              = [rule for rule in sorted_rules if rule[3:] in rules_selector]
         rules_activation_filename = 'comparison_attack_adv_svm_new.pdf'
     else:
-        rules_activation_filename = 'comparison_attack_adv_svm_l2_ds1.pdf' # To change
+        rules_activation_filename = 'comparison_attack_adv_svm_l2_ds_wafamole.pdf' # To change
 
     adv_prob    = df_adv[sorted_rules].mean().values.tolist()
     attack_prob = df_attack[sorted_rules].mean().values.tolist() 
@@ -134,17 +128,22 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
             'rules': sorted_rules * 2,
             'prob' : adv_prob + attack_prob,
             'type' : (['adversarial'] * len(sorted_rules)) + (['malicious'] * len(sorted_rules))
-        }
-    )
+        })
 
     fig_prob, ax_prob = plt.subplots(1, 1)
     
     so.Plot(df_plot, x='rules', y='prob', color='type')\
         .add(so.Bar(), legend=True)\
         .scale(color=['orange', 'deepskyblue'])\
-        .on(ax_prob).plot()
+        .on(ax_prob)\
+        .plot()
     
-    ax_prob.set_xticklabels([rule[3:] for rule in sorted_rules], rotation=75, ha='right', rotation_mode='anchor')
+    ax_prob.set_xticklabels(
+        [rule[3:] for rule in sorted_rules],
+        rotation      = 75,
+        ha            = 'right',
+        rotation_mode = 'anchor'
+    )
     
     legend = fig_prob.legends.pop(0)
     
@@ -166,7 +165,38 @@ def analyze_rules_importance(rules_selector=None, legend_fontsize=13, axis_label
     
     fig_prob.set_size_inches(16, 6)
     fig_prob.tight_layout()
-    fig_prob.savefig(os.path.join(figs_save_path, rules_activation_filename), dpi=600, format='pdf', bbox_inches="tight")
+    fig_prob.savefig(
+        os.path.join(figs_save_path, rules_activation_filename), 
+        dpi         = 600,
+        format      = 'pdf',
+        bbox_inches = "tight"
+    )
+
 
 if __name__ == '__main__':
-    analyze_rules_importance(legend_fontsize=13, axis_labels_size=18, tick_labels_size=14)
+    settings         = toml.load('config.toml')
+    crs_ids_path     = settings['crs_ids_path']
+    figures_path     = settings['figures_path']
+    dataset_path     = settings['dataset_path']
+    pl               = settings['params']['paranoia_levels']
+    adv_dataset_path = settings['adv_dataset_path']
+    crs_dir          = settings['crs_dir']
+
+    adv_examples_base_path       = adv_dataset_path
+    benign_load_path             = os.path.join(dataset_path, 'legitimate_test.json')
+    attacks_load_path            = os.path.join(dataset_path, 'malicious_test.json')
+    adv_payloads_filename        = os.path.join(
+        adv_examples_base_path, 
+        'adv_test_svm_linear_l2_pl{pl}_rs20_100rounds.json'.format(pl=pl)
+    )
+
+    analyze_rules_importance(
+        owasp_crs_rules_ids_filepath = crs_ids_path,
+        figs_save_path               = figures_path,
+        benign_load_path             = benign_load_path,
+        attacks_load_path            = attacks_load_path,
+        adv_payloads_filename        = adv_payloads_filename,
+        legend_fontsize              = 13,
+        axis_labels_size             = 18,
+        tick_labels_size             = 14
+    )

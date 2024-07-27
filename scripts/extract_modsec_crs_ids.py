@@ -1,6 +1,6 @@
 """
 This script is used to extract the CRS IDs from the ModSecurity Core Rule Set (CRS)
-and save them into a JSON file.
+and save them into a JSON file. This extracts only the used CRS IDs in the dataset.
 """
 
 import os

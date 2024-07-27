@@ -35,7 +35,7 @@ class DataLoader:
         """
         
         with open(self._legitimate_path, 'rb') as file:
-            legitimate_data= pickle.load(file)
+            legitimate_data = pickle.load(file)
         
         with open(self._malicious_path, 'rb') as file:
             malicious_data = pickle.load(file)

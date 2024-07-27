@@ -1,6 +1,6 @@
 """
 This script is used to train the models with different paranoia levels and penalties.
-The trained models are saved as joblib files in the models directory.
+The trained models are saved as joblib files in the `models` directory.
 """
 
 import toml
@@ -11,49 +11,55 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
-from src.models import InfSVM
+from src.models import InfSVM2 as InfSVM
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
+# Set to True if you want to train the models on the WAFAMOLE dataset
+DS_WAFAMOLE = False
 
-if __name__  == '__main__':
+if __name__ == '__main__':
     settings         = toml.load('config.toml')
     crs_dir          = settings['crs_dir']
     crs_ids_path     = settings['crs_ids_path']
-    models_path      = settings['models_path']
-    models_path_ds2  = settings['models_path_ds2']
+    models_path      = settings['models_path'] if not DS_WAFAMOLE else settings['models_path_wafamole']
+    dataset_path     = settings['dataset_path'] if not DS_WAFAMOLE else settings['dataset_wafamole_path']
     figures_path     = settings['figures_path']
-    dataset_path     = settings['dataset_path']
-    dataset2_path    = settings['dataset2_path']
     paranoia_levels  = settings['params']['paranoia_levels']
     models           = list(filter(lambda model: model != 'modsec', settings['params']['other_models']))
-    models           +=settings['params']['models']
+    models          += settings['params']['models']
     penalties        = settings['params']['penalties']
     t                = [0.5, 1]
     
+    # ----------------------
     # LOADING DATASET PHASE
+    # ----------------------
     print('[INFO] Loading dataset...')
-    
-    # Dataset ModSec-learn
-    loader = DataLoader(
-        malicious_path  = os.path.join(dataset_path, 'malicious_train.json'),
-        legitimate_path = os.path.join(dataset_path, 'legitimate_train.json')
-    )    
-    training_data = loader.load_data()
 
-    # Dataset WAF-A-MoLE
     loader = DataLoader(
-        malicious_path  = os.path.join(dataset2_path, 'sqli_train.pkl'),
-        legitimate_path = os.path.join(dataset2_path, 'benign_train.pkl')
-    )    
-    training_data2 = loader.load_data_pkl()
+        malicious_path  = os.path.join(
+            dataset_path, 
+            f'malicious_train.{"pkl" if DS_WAFAMOLE else "json"}'
+        ),
+        legitimate_path = os.path.join(
+            dataset_path, 
+            f'legitimate_train.{"pkl" if DS_WAFAMOLE else "json"}'
+        )
+    )  
+    
+    if DS_WAFAMOLE:
+        training_data = loader.load_data_pkl()
+    else:
+        training_data = loader.load_data()
 
     models_weights = dict()
     
+    # ---------------------
+    # STARTING EXPERIMENTS
+    # ---------------------
     for pl in paranoia_levels:
-        # FEATURE EXTRACTION PHASE
-        print('[INFO] Extracting features for PL {}...'.format(pl))
+        print(f'[INFO] Extracting features for PL {pl}...')
         
         extractor = ModSecurityFeaturesExtractor(
             crs_ids_path = crs_ids_path,
@@ -61,19 +67,18 @@ if __name__  == '__main__':
             crs_pl       = pl
         )
     
-        xtr, ytr = extractor.extract_features(training_data2)
+        xtr, ytr = extractor.extract_features(training_data)
 
-        # TRAINING PHASE
         for model_name in models:
-            print('[INFO] Training {} model for PL {}...'.format(model_name, pl))
+            print(f'[INFO] Training {model_name} model for PL {pl}...')
             
             if model_name == 'infsvm':
-                for numbers in t: 
-                    model = InfSVM(numbers)
+                for number in t: 
+                    model = InfSVM(number)
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 
-                        os.path.join(models_path_ds2, 'inf_svm_pl{}_t{}.joblib'.format(pl,numbers))
+                        os.path.join(models_path, f'inf_svm_pl{pl}_t{number}.joblib')
                     )
                     
             if model_name == 'svc':
@@ -89,7 +94,7 @@ if __name__  == '__main__':
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 
-                        os.path.join(models_path_ds2, 'linear_svc_pl{}_{}.joblib'.format(pl, penalty))
+                        os.path.join(models_path, f'linear_svc_pl{pl}_{penalty}.joblib')
                     )
                         
             elif model_name == 'rf':
@@ -101,8 +106,7 @@ if __name__  == '__main__':
                 model.fit(xtr, ytr)
                 joblib.dump(
                     model, 
-                    os.path.join(models_path_ds2, 'rf_pl{}.joblib'.format(pl))
-                )
+                    os.path.join(models_path, f'rf_pl{pl}.joblib'))
 
             elif model_name == 'log_reg':
                 for penalty in penalties:
@@ -118,5 +122,5 @@ if __name__  == '__main__':
                     model.fit(xtr, ytr)
                     joblib.dump(
                         model, 
-                        os.path.join(models_path_ds2, 'log_reg_pl{}_{}.joblib'.format(pl, penalty))
+                        os.path.join(models_path, f'log_reg_pl{pl}_{penalty}.joblib')
                     )

@@ -1,25 +1,22 @@
 """
-An implem
+An implemementation of the infinite SVM model with uniform weights.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy
 from sklearn.base import BaseEstimator, ClassifierMixin
 from cvxpy import *
-from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
 
 
-class InfSVM(BaseEstimator, ClassifierMixin):
+class InfSVM2(BaseEstimator, ClassifierMixin):
     def __init__(self, t=1):
-        self.coef_ = None
+        self.coef_      = None
         self.intercept_ = None
-        self.t = t
+        self.t          = t
 
     def fit(self, X, y):
-        (n,d) = X.shape
-        y= 2*y-1
+        (n, d) = X.shape
+        y      = 2 * y-1
 
         g = -np.ones(shape=(n, 1))
 
@@ -31,30 +28,32 @@ class InfSVM(BaseEstimator, ClassifierMixin):
         Y = np.tile(y, reps=[d, 1]).T
 
         # hinge loss's constraint
-        A[:, :d] =  (-Y) * X
-        A[:, d] = -y
+        A[:, :d]     = (-Y) * X
+        A[:, d]      = -y
         A[:, d + 1:] = -np.eye(n)
 
-        # print(c,g,np.round(A,2))
         lb = np.array([None] * (d+1+n))
         ub = np.array([None] * (d+1+n))
 
-        lb[0:d] = -self.t
+        lb[0:d]  = -self.t
         lb[d+1:] = 0
-        ub[0:d] = self.t
+        ub[0:d]  = self.t
 
-        res = scipy.optimize.linprog(c, A_ub=A, b_ub=g, bounds=np.vstack((lb,ub)).T)
-        self.coef_ = res.x[0:d]
+        res             = scipy.optimize.linprog(c, A_ub=A, b_ub=g, bounds=np.vstack((lb,ub)).T)
+        self.coef_      = res.x[0:d]
         self.intercept_ = res.x[d]
+       
         return self
 
     def predict(self, X):
         scores = self.decision_function(X)
-        ypred = np.argmax(scores, axis=1)
+        ypred  = np.argmax(scores, axis=1)
+        
         return ypred
 
     def decision_function(self, X):
         n_samples = X.shape[0]
         scores = np.dot(X, self.coef_) + self.intercept_
+        
         #return np.array([-scores.T, scores.T]).T
         return np.array([scores.T]).T

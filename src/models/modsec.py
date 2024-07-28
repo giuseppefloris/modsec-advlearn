@@ -32,7 +32,7 @@ class PyModSecurity():
         """
         Constructor of PyModsecurity class
         
-        Arguments
+        Parameters:
         ---------
             rules_dir: str
                 Path to the directory containing the CRS rules.
@@ -90,7 +90,7 @@ class PyModSecurity():
         """
         Process the provided payload using the ModSecurity CRS WAF.
 
-        Arguments:
+        Parameters:
         ----------
             payload: str
                 The payload to process. 
@@ -148,7 +148,7 @@ class PyModSecurity():
         Predict the class labels for samples in X, if the output type is 'binary', 
         however if the output type is 'score', it returns the score of samples in X.
 
-        Arguments:
+        Parameters:
         ----------
             X: array-like of shape (n_samples,)
                 The input samples to predict.

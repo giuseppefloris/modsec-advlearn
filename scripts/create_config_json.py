@@ -1,5 +1,5 @@
 """
-A script to generate JSON configuration files for the experiments.
+A script to generate JSON configuration files for the WAF-A-MoLE tool.
 """
 
 import json

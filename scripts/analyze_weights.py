@@ -220,7 +220,7 @@ def analyze_weights_with_modsec(
 if __name__ == '__main__':
     settings         = toml.load('config.toml')
     crs_ids_path     = settings['crs_ids_path']
-    crs_weigths_path  = settings['crs_weights_path']
+    crs_weigths_path = settings['crs_weights_path']
     models_path      = settings['models_path']
     figures_path     = settings['figures_path']
     pl               = 4

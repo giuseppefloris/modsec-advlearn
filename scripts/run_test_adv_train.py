@@ -45,7 +45,7 @@ if  __name__ == '__main__':
     )
     adv_log_reg_l1_path_test = os.path.join(
         dataset_path, 
-        f'adv_test_log_reg_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
+        f'adv_test_log_reg_l1_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
     )
     adv_log_reg_l2_path_test = os.path.join(
         dataset_path, 
@@ -53,7 +53,7 @@ if  __name__ == '__main__':
     )
     adv_svm_linear_l1_path_test = os.path.join(
         dataset_path, 
-        f'adv_test_svm_linear_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
+        f'adv_test_svm_linear_l1_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
     )
     adv_svm_linear_l2_path_test = os.path.join(
         dataset_path, 
@@ -71,7 +71,7 @@ if  __name__ == '__main__':
     )
     adv_log_reg_l1_path = os.path.join(
         dataset_path, 
-        f'adv_train_test_log_reg_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
+        f'adv_train_test_log_reg_l1_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
     )
     adv_log_reg_l2_path = os.path.join(
         dataset_path, 
@@ -79,7 +79,7 @@ if  __name__ == '__main__':
     )
     adv_svm_linear_l1_path = os.path.join(
         dataset_path, 
-        f'adv_train_test_svm_linear_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
+        f'adv_train_test_svm_linear_l1_pl{pl}_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
     )
     adv_svm_linear_l2_path = os.path.join(
         dataset_path, 
@@ -246,7 +246,7 @@ if  __name__ == '__main__':
             'adv_train_yts': adv_train_log_reg_l1_yts
         },
         'log_reg_l2': {
-            'label'        : 'LR $\\ell_2$',
+            'label'        : 'LR $\ell_2$',
             'color'        : 'orange',
             'adv_color'    : 'deepskyblue',
             'model'        : joblib.load(os.path.join(models_path, 'log_reg_pl4_l2.joblib')),
@@ -281,7 +281,7 @@ if  __name__ == '__main__':
         plot_roc(
             yts,
             y_scores,
-            label_legend       = 'MLModSec test',
+            label_legend       = 'ModSec-Learn',
             ax                 = ax,
             settings           = {'color': settings['color'], 'linestyle': 'solid'},
             plot_rand_guessing = False,
@@ -300,7 +300,7 @@ if  __name__ == '__main__':
         plot_roc(
             settings['adv_yts'],
             adv_y_scores,
-            label_legend       = 'MLModSec test-adv',
+            # label_legend       = 'ModSec-Learn',
             ax                 = ax,
             settings           = {'color': settings['color'], 'linestyle': 'dashed'},
             plot_rand_guessing = False,
@@ -322,7 +322,7 @@ if  __name__ == '__main__':
             plot_roc(
                 yts,
                 adv_train_y_scores,
-                label_legend       = 'AdvModSec test',
+                label_legend       = 'AdvModSec-Learn',
                 ax                 = ax,
                 settings           = {'color': settings['adv_color'], 'linestyle': 'solid'},
                 plot_rand_guessing = False,
@@ -340,7 +340,7 @@ if  __name__ == '__main__':
             plot_roc(
                 settings['adv_train_yts'],
                 adv_train_adv_y_scores,
-                label_legend       = 'AdvModSec test-adv',
+                # label_legend       = 'AdvModSec-Learn',
                 ax                 = ax,
                 settings           = {'color': settings['adv_color'], 'linestyle': 'dashed'},
                 plot_rand_guessing = False,
@@ -350,12 +350,12 @@ if  __name__ == '__main__':
                 pl                 = pl
             )
 
-    # Final global settings for the figure
-    ax.set_title(f'{settings["label"]} PL 4', fontsize = 16)
-    ax.xaxis.set_tick_params(labelsize = 14)
-    ax.yaxis.set_tick_params(labelsize = 14)
-    ax.xaxis.label.set_size(16)
-    ax.yaxis.label.set_size(16)
+        # Final global settings for the figure
+        ax.set_title(f'{settings["label"]} PL 4', fontsize = 16)
+        ax.xaxis.set_tick_params(labelsize = 14)
+        ax.yaxis.set_tick_params(labelsize = 14)
+        ax.xaxis.label.set_size(16)
+        ax.yaxis.label.set_size(16)
 
     handles, labels = axs[0].get_legend_handles_labels()      
 

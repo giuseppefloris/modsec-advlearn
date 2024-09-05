@@ -14,7 +14,7 @@ from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
 
 # Set to True if you want to train the models on the WAFAMOLE dataset
-DS_WAFAMOLE = True
+DS_WAFAMOLE = False
 
 if  __name__ == '__main__':    
     settings     = toml.load('config.toml')
@@ -364,7 +364,7 @@ if  __name__ == '__main__':
         bbox_to_anchor = (0.5, -0.01),
         fancybox       = True,
         shadow         = True,
-        ncol           = 6,
+        ncol           = 2,
         fontsize       = 13
     )
     fig.set_size_inches(22, 5)

@@ -74,8 +74,8 @@ def analyze_weights(
                     model_l1_weights.tolist() + 
                     model_l2_weights.tolist(),
         'type': ['ModSec'] * len(crs_ids) + 
-                [f'ModSec-AdvLearn ({model_name})'] * len(crs_ids) + 
-                [f'ModSec-Learn ({model_name})'] * len(crs_ids)
+                [f'ModSec-Learn ({model_name} - $\ell_1$)'] * len(crs_ids) + 
+                [f'ModSec-Learn ({model_name} - $\ell_2$)'] * len(crs_ids)
     })
 
     sns.barplot(
@@ -85,9 +85,9 @@ def analyze_weights(
         hue     = 'type',
         dodge   = True,
         palette = {
-            'ModSec'                         : '#aedc41',
-            f'ModSec-Learn ({model_name})'   : '#81b8ef',
-            f'ModSec-AdvLearn ({model_name})': '#fe6d73'
+            'ModSec' : '#aedc41',
+            f'ModSec-Learn ({model_name} - $\ell_1$)': '#81b8ef',
+            f'ModSec-Learn ({model_name} - $\ell_2$)': '#fe6d73'
         },
         ax      = axs,
         width   = 0.8
@@ -119,7 +119,7 @@ def analyze_weights(
     
     axs.grid(visible=True, axis='both', color='gray', linestyle='dotted')
     
-    fig.set_size_inches(24, 8)
+    fig.set_size_inches(24, 5)
     fig.tight_layout()
     fig.savefig(
         os.path.join( 
@@ -146,17 +146,17 @@ if __name__ == '__main__':
     with open(crs_weigths_path) as file:
         weights = json.load(file)['weights']
     
-    model_name = 'linear_svc_pl{}_l1.joblib'.format(pl)
+    model_name = 'log_reg_pl{}_l1.joblib'.format(pl)
     model_l1      = joblib.load(
         os.path.join(models_path, model_name)
     )
-    model_name = 'linear_svc_pl{}_l2.joblib'.format(pl)
+    model_name = 'log_reg_pl{}_l2.joblib'.format(pl)
     model_l2      = joblib.load(
         os.path.join(models_path, model_name)
     )
 
     analyze_weights(
-        'SVM',
+        'LR',
         model_l1,
         model_l2,
         crs_ids,

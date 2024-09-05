@@ -21,7 +21,7 @@ if  __name__ == '__main__':
     settings        = toml.load('config.toml')
     crs_dir         = settings['crs_dir']
     crs_ids_path    = settings['crs_ids_path']
-    models_path     = settings['models_path'] if not DS_WAFAMOLE else settings['models_path_wafamole']
+    models_path     = settings['models_path'] if not DS_WAFAMOLE else settings['models_wafamole_path']
     dataset_path    = settings['dataset_path'] if not DS_WAFAMOLE else settings['dataset_wafamole_path']
     figures_path    = settings['figures_path']
     paranoia_levels = settings['params']['paranoia_levels']

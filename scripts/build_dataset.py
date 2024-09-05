@@ -23,6 +23,7 @@ if __name__ == '__main__':
     crs_ids_path    = settings['crs_ids_path']
     malicious_path  = settings['malicious_path']
     legitimate_path = settings['legitimate_path']
+    dataset_path    = settings['dataset_path']
 
     loader = DataLoader(
         legitimate_path = legitimate_path,
@@ -51,10 +52,10 @@ if __name__ == '__main__':
         shuffle      = True
     )
 
-    with open('data/dataset/legitimate_train.json', 'w') as file:
+    with open(os.path.join(dataset_path, 'legitimate_train.json'), 'w') as file:
         json.dump(xtr.tolist(), file, indent=4)
 
-    with open('data/dataset/legitimate_test.json', 'w') as file:
+    with open(os.path.join(dataset_path, 'legitimate_test.json'), 'w') as file:
         json.dump(xts.tolist(), file, indent=4)
 
     # MALICIOUS DATA
@@ -66,8 +67,8 @@ if __name__ == '__main__':
         shuffle      = True
     )
 
-    with open('data/dataset/malicious_train.json', 'w') as file:
+    with open(os.path.join(dataset_path, 'malicious_train.json'), 'w') as file:
         json.dump(xtr.tolist(), file, indent=4)
 
-    with open('data/dataset/malicious_test.json', 'w') as file:
+    with open(os.path.join(dataset_path, 'malicious_test.json'), 'w') as file:
         json.dump(xts.tolist(), file, indent=4)

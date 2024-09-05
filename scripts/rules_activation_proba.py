@@ -1,5 +1,5 @@
 """
-This script is used to plot the activation probability of the OWASP CRS rules.
+This script is used to plot the activation probability and the weights of the CRS rules for the ML models.
 """
 
 import matplotlib.pyplot as plt
@@ -7,31 +7,37 @@ import os
 import json
 import numpy as np
 import pandas as pd
-import seaborn.objects as so
+import seaborn as sns
 import toml
 import sys
-import pickle # only for waf-a-mole dataset
+import joblib
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.data_loader import DataLoader
 from src.extractor import ModSecurityFeaturesExtractor
 
-
-
+# Set to True if you want to train the models on the WAFAMOLE dataset
+DS_WAFAMOLE = False
 
 def analyze_rules_importance(
-    owasp_crs_rules_ids_filepath: str,
-    figs_save_path              : str,
-    benign_load_path            : str,
-    attacks_load_path           : str,
-    adv_payloads_filename       : str,
+    crs_rules_ids_file : str,
+    figs_save_path     : str,
+    benign_load_path   : str,
+    attacks_load_path  : str,
+    adv_payloads_path  : str,
+    model_name         : str,
+    model_path         : str,
+    model_advtrain_path: str,
     pl               = 4,
     rules_selector   = None,
     legend_fontsize  = 13,
     axis_labels_size = 16,
     tick_labels_size = 14
 ):
-    with open(owasp_crs_rules_ids_filepath, 'r') as fp:
+    # ------
+    # SETUP
+    # ------
+    with open(crs_rules_ids_file, 'r') as fp:
         data = json.load(fp)
         owasp_crs_ids = sorted(data['rules_ids'])
 
@@ -46,63 +52,100 @@ def analyze_rules_importance(
     crs_rules_ids_pl3 = crs_rules_ids_pl2 + crs_rules_ids_pl3_unique
     crs_rules_ids_pl4 = crs_rules_ids_pl3 + crs_rules_ids_pl4_unique
 
-    num_samples_adv  = 2001
-    num_samples_base = 5000
+    if DS_WAFAMOLE:
+        num_samples = 2000
+    else:
+        num_samples = 5000
 
-    assert 0 < pl < 5
+    # -----------------------------------
+    # COMPUTING MODEL WEIGHTS AND SCORES
+    # -----------------------------------
 
-    if pl == 1:
-        rules_filter = crs_rules_ids_pl1
-    elif pl == 2:
-        rules_filter = crs_rules_ids_pl2
-    elif pl == 3:
-        rules_filter = crs_rules_ids_pl3
-    elif pl == 4:
-        rules_filter = crs_rules_ids_pl4
-
+    # Load default dataset
     loader = DataLoader(
         malicious_path  = attacks_load_path,
         legitimate_path = benign_load_path
     )
-    adv_loader = DataLoader(
-        malicious_path  = adv_payloads_filename,
+    
+    # Load adversarial dataset
+    loader_adv = DataLoader(
+        malicious_path  = adv_payloads_path,
         legitimate_path = benign_load_path
     )
-    data_adv = adv_loader.load_data()
-    dataset  = loader.load_data()
-    
+
+    if DS_WAFAMOLE:
+        dataset  = loader.load_data_pkl()
+        data_adv = loader_adv.load_data_pkl()
+    else:
+        dataset  = loader.load_data()
+        data_adv = loader_adv.load_data()
+        
     extractor = ModSecurityFeaturesExtractor(
         crs_ids_path = crs_ids_path,
         crs_path     = crs_dir,
         crs_pl       = pl
     )
 
-    xts, yts    = extractor.extract_features(dataset)
-    adv_dataset = data_adv[data_adv['label'] == 1]
+    benign_datset = dataset[dataset['label'] == 0][:num_samples]
+    xts_benign, _ = extractor.extract_features(benign_datset)
+    
+    malicious_dataset = dataset[dataset['label'] == 1][:num_samples]
+    xts_attack, _     = extractor.extract_features(malicious_dataset)
+    
+    adv_dataset = data_adv[data_adv['label'] == 1][:num_samples]
     xts_adv, _  = extractor.extract_features(adv_dataset)
     
-    df_benign = pd.DataFrame(data=xts[yts == 0], index=list(range(num_samples_base)), columns=owasp_crs_ids)
-    df_attack = pd.DataFrame(data=xts[yts == 1], index=list(range(num_samples_base)), columns=owasp_crs_ids)
-    df_adv    = pd.DataFrame(data=xts_adv, index=list(range(num_samples_adv)), columns=owasp_crs_ids)
+    df_benign = pd.DataFrame(
+        data    = xts_benign,
+        index   = list(range(num_samples)),
+        columns = owasp_crs_ids
+    )
+    df_attack = pd.DataFrame(
+        data    = xts_attack,
+        index   = list(range(num_samples)),
+        columns = owasp_crs_ids
+    )
+    df_adv    = pd.DataFrame(
+        data    = xts_adv,
+        index   = list(range(num_samples)),
+        columns = owasp_crs_ids
+    )
 
-    # rules to be removed from the plots: rules that are not triggered by any benign, attack and adv. samples
-    rules_to_remove = []
+    # Load ML models
+    model          = joblib.load(model_path)
+    model_advtrain = joblib.load(model_advtrain_path)
+
+    # -------------------
+    # DATA PREPROCESSING
+    # -------------------
+
+    # Rules to be removed from the plots: rules that are not triggered by any benign, attack and adv. samples
+    rules_to_remove = list()
     for rule in owasp_crs_ids:
         if df_attack[rule].sum() == 0 and df_benign[rule].sum() == 0 and df_adv[rule].sum(): 
             rules_to_remove.append(rule)
             print(f'SUM {df_adv[rule].sum()} of rule {rule} is zero')
             print("RULES NEVER TRIGGERED: {}".format(rules_to_remove))
 
-    # select rules related to target PL, sort them alphabetically
-    select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in rules_filter) and (rule not in rules_to_remove)])
+    # Select rules related to target PL, sort them alphabetically
+    if pl == 1:
+        select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in crs_rules_ids_pl1) and (rule not in rules_to_remove)])
+    elif pl == 2:
+        select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in crs_rules_ids_pl2) and (rule not in rules_to_remove)])
+    elif pl == 3:
+        select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in crs_rules_ids_pl3) and (rule not in rules_to_remove)])
+    elif pl == 4:
+        select_rules = sorted([rule for rule in owasp_crs_ids if (int(rule) in crs_rules_ids_pl4) and (rule not in rules_to_remove)])
 
+    # Computing delta between adversarial and attack samples
     delta = (df_adv[select_rules] - df_attack[select_rules]).mean().values
     assert delta.flatten().shape[0] == len(select_rules)
 
     rules_delta  = {r: s for r, s in zip(select_rules, delta.tolist())}
-    rules_delta  = dict(sorted(rules_delta.items(), key=lambda item: item[1], reverse=False))  # reverse = True
+    rules_delta  = dict(sorted(rules_delta.items(), key=lambda item: item[1], reverse=False))
     sorted_rules = list(rules_delta.keys())
 
+    # Split rules into positive, negative and same slope
     pos_rules, neg_rules, same_rules = list(), list(), list()
     for rule, slope in rules_delta.items():
         if slope > 0:
@@ -111,32 +154,49 @@ def analyze_rules_importance(
             neg_rules.append(rule)
         else:
             same_rules.append(rule)
+
+    # Retrieve weights of the model and the adversarial trained model
+    weights          = model.coef_.flatten()
+    weights_advtrain = model_advtrain.coef_.flatten()
     
+    # Sort weights according to the order of select_rules:
+    weights          = np.array([weights[owasp_crs_ids.index(rule)] for rule in sorted_rules])
+    weights_advtrain = np.array([weights_advtrain[owasp_crs_ids.index(rule)] for rule in sorted_rules])
+    assert tuple(weights.shape) == tuple(delta.shape) and tuple(weights_advtrain.shape) == tuple(delta.shape)
+
+    # Normalize weights
+    weights          = weights / np.linalg.norm(weights)
+    weights_advtrain = weights_advtrain / np.linalg.norm(weights_advtrain)
+
+    # Filter rules according to the rules_selector (if provided)
     if rules_selector is not None and isinstance(rules_selector, list):
         weights                   = np.array([w for w, rule in zip(weights.tolist(), sorted_rules) if rule if rule[3:] in rules_selector])
         weights_advtrain          = np.array([w for w, rule in zip(weights_advtrain.tolist(), sorted_rules) if rule if rule[3:] in rules_selector])
         sorted_rules              = [rule for rule in sorted_rules if rule[3:] in rules_selector]
-        rules_activation_filename = 'comparison_attack_adv_svm_new.pdf'
-    else:
-        rules_activation_filename = 'comparison_attack_adv_svm_l2_ds_wafamole.pdf' # To change
 
     adv_prob    = df_adv[sorted_rules].mean().values.tolist()
     attack_prob = df_attack[sorted_rules].mean().values.tolist() 
     
-    df_plot = pd.DataFrame(
-        {
-            'rules': sorted_rules * 2,
-            'prob' : adv_prob + attack_prob,
-            'type' : (['adversarial'] * len(sorted_rules)) + (['malicious'] * len(sorted_rules))
-        })
-
+    # -----------------------------------------
+    # PLOT ACTIVATION PROBABILITY OF THE RULES
+    # -----------------------------------------
     fig_prob, ax_prob = plt.subplots(1, 1)
     
-    so.Plot(df_plot, x='rules', y='prob', color='type')\
-        .add(so.Bar(), legend=True)\
-        .scale(color=['orange', 'deepskyblue'])\
-        .on(ax_prob)\
-        .plot()
+    df_plot = pd.DataFrame({
+        'rules': sorted_rules * 2,
+        'prob' : adv_prob + attack_prob,
+        'type' : (['adversarial'] * len(sorted_rules)) + (['malicious'] * len(sorted_rules))
+    })
+
+    sns.barplot(
+        data    = df_plot,
+        x       = 'rules',
+        y       = 'prob',
+        hue     = 'type',
+        dodge   = True,
+        palette = {'adversarial': 'orange', 'malicious': 'deepskyblue'},
+        ax      = ax_prob
+    )
     
     ax_prob.set_xticklabels(
         [rule[3:] for rule in sorted_rules],
@@ -145,16 +205,16 @@ def analyze_rules_importance(
         rotation_mode = 'anchor'
     )
     
-    legend = fig_prob.legends.pop(0)
-    
+    legend = ax_prob.get_legend()
     ax_prob.legend(
         legend.legendHandles, 
         [t.get_text() for t in legend.texts], 
-        loc      = 'upper left',
-        fancybox = True,
-        shadow   = False,
-        fontsize = legend_fontsize
+        loc='upper right', 
+        fancybox=True, 
+        shadow=False, 
+        fontsize=legend_fontsize
     )
+
     ax_prob.set_xlabel('CRS SQLi Rules', fontsize=axis_labels_size, labelpad=10)
     ax_prob.set_ylabel('Activation probability', fontsize=axis_labels_size, labelpad=10)
     ax_prob.set_xmargin(0.05)
@@ -162,11 +222,74 @@ def analyze_rules_importance(
     ax_prob.xaxis.set_tick_params(labelsize=tick_labels_size)
     ax_prob.yaxis.set_tick_params(labelsize=tick_labels_size)
     ax_prob.grid(visible=True, axis='both', color='gray', linestyle='dotted')
+    ax_prob.set_title(model_name.upper().replace('_', ' '), fontsize=axis_labels_size)
     
     fig_prob.set_size_inches(16, 6)
     fig_prob.tight_layout()
     fig_prob.savefig(
-        os.path.join(figs_save_path, rules_activation_filename), 
+        os.path.join(
+            figs_save_path, 
+            'comparison_attack_adv_{}{}.pdf'.format(model_name, '_wafamole' if DS_WAFAMOLE else '')
+        ), 
+        dpi         = 600,
+        format      = 'pdf',
+        bbox_inches = "tight"
+    )
+
+    # ------------------------ 
+    # PLOT WEIGHTS COMPARISON
+    # ------------------------
+    fig_weights_cmp, ax_weights = plt.subplots(1, 1)
+    
+    df_plot = pd.DataFrame({
+        'rules': sorted_rules * 2,
+        'weight': weights_advtrain.tolist() + weights.tolist(),
+        'type': (['ModSec-AdvLearn'] * len(sorted_rules)) + (['ModSec-Learn'] * len(sorted_rules))
+    })
+    
+    sns.barplot(
+        data    = df_plot,
+        x       = 'rules',
+        y       = 'weight',
+        hue     = 'type',
+        dodge   = True,
+        palette = {'ModSec-AdvLearn': 'orange', 'ModSec-Learn': 'deepskyblue'},
+        ax      = ax_weights
+    )
+    
+    ax_weights.set_xticklabels(
+        [rule[3:] for rule in sorted_rules], 
+        rotation      = 75,
+        ha            = 'right',
+        rotation_mode = 'anchor'
+    )
+    
+    legend = ax_weights.get_legend()
+    
+    ax_weights.legend(
+        legend.legendHandles, 
+        [t.get_text() for t in legend.texts], 
+        loc      = 'lower left',
+        fancybox = True,
+        shadow   = False,
+        fontsize = legend_fontsize
+    )
+    ax_weights.set_xlabel('CRS SQLi Rules', fontsize=axis_labels_size, labelpad=10)
+    ax_weights.set_ylabel('Weight', fontsize=axis_labels_size, labelpad=10)
+    ax_weights.set_xmargin(0.05)
+    ax_weights.set_ymargin(0.05)
+    ax_weights.xaxis.set_tick_params(labelsize=tick_labels_size)
+    ax_weights.yaxis.set_tick_params(labelsize=tick_labels_size)
+    ax_weights.grid(visible=True, axis='both', color='gray', linestyle='dotted')
+    ax_weights.set_title(model_name.upper().replace('_', ' '), fontsize=axis_labels_size)
+    
+    fig_weights_cmp.set_size_inches(16, 6)
+    fig_weights_cmp.tight_layout()
+    fig_weights_cmp.savefig(
+        os.path.join(
+            figs_save_path, 
+            'weights_comparison_{}{}.pdf'.format(model_name, '_wafamole' if DS_WAFAMOLE else '')
+        ), 
         dpi         = 600,
         format      = 'pdf',
         bbox_inches = "tight"
@@ -174,29 +297,48 @@ def analyze_rules_importance(
 
 
 if __name__ == '__main__':
-    settings         = toml.load('config.toml')
-    crs_ids_path     = settings['crs_ids_path']
-    figures_path     = settings['figures_path']
-    dataset_path     = settings['dataset_path']
-    pl               = settings['params']['paranoia_levels']
-    adv_dataset_path = settings['adv_dataset_path']
-    crs_dir          = settings['crs_dir']
+    settings          = toml.load('config.toml')
+    crs_ids_path      = settings['crs_ids_path']
+    figures_path      = settings['figures_path']
+    crs_dir           = settings['crs_dir']
 
-    adv_examples_base_path       = adv_dataset_path
-    benign_load_path             = os.path.join(dataset_path, 'legitimate_test.json')
-    attacks_load_path            = os.path.join(dataset_path, 'malicious_test.json')
-    adv_payloads_filename        = os.path.join(
-        adv_examples_base_path, 
-        'adv_test_svm_linear_l2_pl{pl}_rs20_100rounds.json'.format(pl=pl)
+    if DS_WAFAMOLE:
+        dataset_path     = settings['dataset_wafamole_path']
+        models_path      = settings['models_wafamole_path']
+    else:
+        dataset_path     = settings['dataset_path']
+        models_path      = settings['models_path']
+
+    adv_payloads_path = os.path.join(
+        dataset_path, 
+        f'adv_test_log_reg_l1_pl4_rs20_100rounds.{"pkl" if DS_WAFAMOLE else "json"}'
+    )
+
+    legitimate_test_path = os.path.join(
+        dataset_path, 
+        f'legitimate_test.{"pkl" if DS_WAFAMOLE else "json"}'
+    )    
+    malicious_test_path = os.path.join(
+        dataset_path, 
+        f'malicious_test.{"pkl" if DS_WAFAMOLE else "json"}'
     )
 
     analyze_rules_importance(
-        owasp_crs_rules_ids_filepath = crs_ids_path,
-        figs_save_path               = figures_path,
-        benign_load_path             = benign_load_path,
-        attacks_load_path            = attacks_load_path,
-        adv_payloads_filename        = adv_payloads_filename,
-        legend_fontsize              = 13,
-        axis_labels_size             = 18,
-        tick_labels_size             = 14
+        crs_rules_ids_file  = crs_ids_path,
+        figs_save_path      = figures_path,
+        benign_load_path    = legitimate_test_path,
+        attacks_load_path   = malicious_test_path,
+        adv_payloads_path   = adv_payloads_path,
+        model_name          = 'log_reg_l1',
+        model_path          = os.path.join(
+            models_path, 
+            'log_reg_pl4_l1.joblib'
+        ),
+        model_advtrain_path = os.path.join(
+            models_path, 
+            'adv_log_reg_pl4_l1.joblib'
+        ),
+        legend_fontsize     = 13,
+        axis_labels_size    = 18,
+        tick_labels_size    = 14
     )

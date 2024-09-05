@@ -10,12 +10,19 @@ import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
-# NOTE: Set the following paths according to your setup !!!
-base_path         = '/home/gfloris/modsec-learn'
-config_path       = '/home/gfloris/modsec-learn/wafamole_config'
-data_base_path    = '/home/gfloris/modsec-learn/data/dataset'
-crs_path          = '/home/gfloris/modsec-learn/coreruleset'
-wafamole_cli_path = '/home/gfloris/modsec-learn/scripts/run_wafamole.py'
+base_path   = os.path.join(os.path.dirname(__file__), '..')
+config_path = os.path.join(base_path, 'wafamole_config')
+
+# NOTE: This should be change, accordin to which dataset you are using 
+dataset_path    = os.path.join(base_path, 'data/dataset')
+output_base_dir = os.path.join(base_path, 'wafamole_results/results_dataset_wafamole')
+
+# NOTE: The .json files are the modsec-learn dataset, while the .pkl files are the WAF-a-MoLE dataset
+dataset_path_test     = os.path.join(dataset_path, 'malicious_test.json')
+dataset_path_advtrain = os.path.join(dataset_path, 'malicious_train.json')
+
+crs_path          = os.path.join(base_path, 'coreruleset')
+wafamole_cli_path = os.path.join(base_path, 'scripts/run_wafamole.py')
 
 target_wafs       = {
     # MS CRS vanilla
@@ -31,24 +38,24 @@ target_wafs       = {
     'inf_svm_pl4': ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_config.json')),
     
     # MLModSec - Logistic Regression
-    'log_reg_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_l1_config.json')),
-    'log_reg_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_l1_config.json')),
-    'log_reg_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl3_l1_config.json')),
-    'log_reg_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_config.json')),
-    'log_reg_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl1_l2_config.json')),
-    'log_reg_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl2_l2_config.json')),
-    'log_reg_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl3_l2_config.json')),
-    'log_reg_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_config.json')),
+    'log_reg_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_l1_crs_pl1_config.json')),
+    'log_reg_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_l1_crs_pl2_config.json')),
+    'log_reg_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_l1_crs_pl3_config.json')),
+    'log_reg_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_l1_crs_pl4_config.json')),
+    'log_reg_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'log_reg_l2_crs_pl1_config.json')),
+    'log_reg_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'log_reg_l2_crs_pl2_config.json')),
+    'log_reg_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'log_reg_l2_crs_pl3_config.json')),
+    'log_reg_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'log_reg_l2_crs_pl4_config.json')),
     
     # MLModSec - SVM
-    'svm_linear_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl1_l1_config.json')),
-    'svm_linear_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl2_l1_config.json')),
-    'svm_linear_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl3_l1_config.json')),
-    'svm_linear_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l1_config.json')),
-    'svm_linear_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl1_l2_config.json')),
-    'svm_linear_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl2_l2_config.json')),
-    'svm_linear_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl3_l2_config.json')),
-    'svm_linear_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l2_config.json')),
+    'svm_linear_l1_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l1_crs_pl1_config.json')),
+    'svm_linear_l1_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l1_crs_pl2_config.json')),
+    'svm_linear_l1_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l1_crs_pl3_config.json')),
+    'svm_linear_l1_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l1_crs_pl4_config.json')),
+    'svm_linear_l2_pl1': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l2_crs_pl1_config.json')),
+    'svm_linear_l2_pl2': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l2_crs_pl2_config.json')),
+    'svm_linear_l2_pl3': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l2_crs_pl3_config.json')),
+    'svm_linear_l2_pl4': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l2_crs_pl4_config.json')),
     
     # MLModSec - Random Forest
     'rf_pl1': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl1_config.json')),
@@ -57,11 +64,11 @@ target_wafs       = {
     'rf_pl4': ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_config.json')),
     
     # AdvModSec
-    'svm_linear_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l1_adv_config.json')),
-    'svm_linear_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_crs_pl4_l2_adv_config.json')),
+    'svm_linear_l1_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l1_crs_pl4_adv_config.json')),
+    'svm_linear_l2_pl4_advtrain': ('ml_model_crs', os.path.join(config_path, 'linear_svc_l2_crs_pl4_adv_config.json')),
     'rf_pl4_advtrain'           : ('ml_model_crs', os.path.join(config_path, 'rf_crs_pl4_adv_config.json')),
-    'log_reg_l1_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l1_adv_config.json')),
-    'log_reg_l2_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_crs_pl4_l2_adv_config.json')),
+    'log_reg_l1_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_l1_crs_pl4_adv_config.json')),
+    'log_reg_l2_pl4_advtrain'   : ('ml_model_crs', os.path.join(config_path, 'log_reg_l2_crs_pl4_adv_config.json')),
     'inf_svm_pl4_advtrain'      : ('ml_model_crs', os.path.join(config_path, 'inf_svm_crs_pl4_adv_config.json')),
 }
 
@@ -129,12 +136,6 @@ if __name__ == "__main__":
     if args.type not in ['test-adv', 'advtrain', 'advmodsec-test-adv']:
         raise Exception("Invalid type of dataset")
     
-    # NOTE: The .json files are the modsec-learn dataset, while the .pkl files are the WAF-a-MoLE dataset
-    # dataset_path_test     = os.path.join(data_base_path, 'malicious_test.json')
-    # dataset_path_advtrain = os.path.join(data_base_path, 'malicious_train.json')
-    dataset_path_test     = os.path.join(data_base_path, 'malicious_test.pkl')
-    dataset_path_advtrain = os.path.join(data_base_path, 'malicious_train.pkl')
-
     if args.type == 'test-adv': # Experiments ModSec and MLModSec 
         test_cases = [
             {'round_size': 20, 'model': 'svm_linear_l1_pl{}'.format(pl), 'max_queries': 2000} for pl in range(1, 5)
@@ -159,8 +160,7 @@ if __name__ == "__main__":
         )
 
         out_dir = os.path.join(
-            base_path, 
-            'wafamole_results/results_dataset_wafamole', 
+            output_base_dir,
             'adv_examples_test'
         )
 
@@ -173,8 +173,7 @@ if __name__ == "__main__":
         ]
 
         out_dir_advtrain = os.path.join(
-            base_path, 
-            'wafamole_results/results_dataset_wafamole', 
+            output_base_dir,
             'adv_examples_advtrain'
         )
 
@@ -187,8 +186,7 @@ if __name__ == "__main__":
         ]
 
         out_dir_advmodsec = os.path.join(
-            base_path, 
-            'wafamole_results/results_dataset_wafamole', 
+            output_base_dir,
             'adv_examples_retrained_test'
         )
         

@@ -14,13 +14,13 @@ from src.extractor import ModSecurityFeaturesExtractor
 from src.utils.plotting import plot_roc
 
 # Set to True if you want to train the models on the WAFAMOLE dataset
-DS_WAFAMOLE = False
+DS_WAFAMOLE = True
 
 if  __name__ == '__main__':    
     settings     = toml.load('config.toml')
     crs_dir      = settings['crs_dir']
     crs_ids_path = settings['crs_ids_path']
-    models_path  = settings['models_path'] if not DS_WAFAMOLE else settings['models_path_wafamole']
+    models_path  = settings['models_path'] if not DS_WAFAMOLE else settings['models_wafamole_path']
     dataset_path = settings['dataset_path'] if not DS_WAFAMOLE else settings['dataset_wafamole_path']
     figures_path = settings['figures_path']
     models       = settings['params']['models']
@@ -300,7 +300,6 @@ if  __name__ == '__main__':
         plot_roc(
             settings['adv_yts'],
             adv_y_scores,
-            # label_legend       = 'ModSec-Learn',
             ax                 = ax,
             settings           = {'color': settings['color'], 'linestyle': 'dashed'},
             plot_rand_guessing = False,
@@ -322,7 +321,7 @@ if  __name__ == '__main__':
             plot_roc(
                 yts,
                 adv_train_y_scores,
-                label_legend       = 'AdvModSec-Learn',
+                label_legend       = 'ModSec-AdvLearn',
                 ax                 = ax,
                 settings           = {'color': settings['adv_color'], 'linestyle': 'solid'},
                 plot_rand_guessing = False,
@@ -340,7 +339,6 @@ if  __name__ == '__main__':
             plot_roc(
                 settings['adv_train_yts'],
                 adv_train_adv_y_scores,
-                # label_legend       = 'AdvModSec-Learn',
                 ax                 = ax,
                 settings           = {'color': settings['adv_color'], 'linestyle': 'dashed'},
                 plot_rand_guessing = False,

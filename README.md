@@ -1,4 +1,4 @@
-# modsec-learn
+# modsec-advlearn
 
 ## How to cite us
 
